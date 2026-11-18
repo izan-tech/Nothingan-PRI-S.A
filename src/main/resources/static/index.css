@@ -1,0 +1,294 @@
+* { 
+    box-sizing: border-box; 
+}
+
+body { 
+    margin: 0; 
+    font-family: Inter, "Segoe UI", Arial, sans-serif; 
+    background: #0f172a; 
+    color: #fff; 
+    font-size: 13px; 
+}
+
+a { 
+    text-decoration: none; 
+    color: inherit; 
+}
+
+/* Capçalera */
+header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 16px 32px; 
+    background: #0f172a; 
+    border-bottom: 1px solid #1e293b; 
+}
+
+.marca { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    cursor: pointer;
+}
+
+.marca .logo { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    background: #2563eb; 
+    color: #fff; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: 700; 
+}
+
+.marca strong { 
+    display: block; 
+    font-size: 14px; 
+    color: #fff; 
+    letter-spacing: .5px; 
+}
+
+.marca small { 
+    font-size: 9px; 
+    letter-spacing: 1px; 
+    color: #cbd5e1; 
+}
+
+.accions-usuari { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.btn { 
+    border-radius: 6px; 
+    padding: 8px 16px; 
+    font-size: 12px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 1px solid #e2e8f0; 
+    background: #fff; 
+    color: #020617; /* Más oscuro (antes #0f172a) */
+    font-family: inherit; 
+}
+
+.btn:hover { 
+    background: #f8fafc; 
+}
+
+.btn-primari { 
+    background: #2563eb; 
+    border-color: #2563eb; 
+    color: #fff; 
+}
+
+.btn-primari:hover { 
+    background: #1d4ed8; 
+}
+
+/* Hero */
+.hero { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 32px; 
+    padding: 48px 32px; 
+    align-items: center; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+
+.hero-img { 
+    width: 100%; 
+    height: 320px; 
+    object-fit: cover; 
+    border-radius: 12px; 
+    border: 1px solid #334155; 
+    background: #1e293b; 
+}
+
+.hero-contingut h1 { 
+    font-size: 32px; 
+    margin: 0 0 16px; 
+    line-height: 1.2; 
+}
+
+.hero-contingut p { 
+    color: #cbd5e1; 
+    font-size: 13px; 
+    line-height: 1.5; 
+    margin-bottom: 24px; 
+}
+
+.hero-botons { 
+    display: flex; 
+    gap: 12px; 
+}
+
+/* Per què triar-nos */
+.seccio-perque { 
+    background: #fff; 
+    color: #020617; /* Más oscuro (antes #0f172a) */
+    padding: 48px 32px; 
+    text-align: center; 
+}
+
+.seccio-perque h2 { 
+    font-size: 24px; 
+    margin-bottom: 32px; 
+    color: #020617;
+}
+
+.graella-avantatges { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+    gap: 20px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    text-align: left; 
+}
+
+.targeta-avantatge { 
+    background: #f8fafc; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 10px; 
+    padding: 24px; 
+}
+
+.targeta-avantatge h3 { 
+    font-size: 14px; 
+    margin: 12px 0 8px; 
+    color: #020617; /* Más oscuro (antes #0f172a) */
+}
+
+.targeta-avantatge p { 
+    color: #334155; /* Mucho más oscuro (antes #64748b) */
+    font-size: 12px; 
+    margin: 0; 
+    line-height: 1.4; 
+}
+
+/* Vehicles destacats */
+.destacats { 
+    padding: 48px 32px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+
+.destacats-cap { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 24px; 
+}
+
+.destacats-cap h2 { 
+    font-size: 20px; 
+    margin: 0; 
+}
+
+.graella-vehicles { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+    gap: 20px; 
+}
+
+.targeta-vehicle { 
+    background: #fff; 
+    color: #020617; /* Más oscuro (antes #0f172a) */
+    border-radius: 10px; 
+    overflow: hidden; 
+    border: 1px solid #334155; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.targeta-vehicle img { 
+    width: 100%; 
+    height: 160px; 
+    object-fit: cover; 
+    background: #f1f5f9; 
+}
+
+.cos-vehicle { 
+    padding: 16px; 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    justify-content: space-between; 
+}
+
+.etiqueta-v { 
+    font-size: 10px; 
+    color: #1e40af; /* Azul más oscuro (antes #2563eb) */
+    font-weight: 700; 
+    text-transform: uppercase; 
+    margin-bottom: 4px; 
+    display: inline-block; 
+}
+
+.targeta-vehicle h3 { 
+    font-size: 14px; 
+    margin: 0 0 6px; 
+    color: #020617;
+}
+
+.targeta-vehicle p { 
+    color: #334155; /* Mucho más oscuro (antes #64748b) */
+    font-size: 11px; 
+    margin: 0 0 16px; 
+}
+
+.peu-vehicle { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-top: 1px solid #f1f5f9; 
+    padding-top: 12px; 
+}
+
+.preu { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: #020617; /* Más oscuro (antes #0f172a) */
+}
+
+.preu small { 
+    font-size: 10px; 
+    color: #334155; /* Mucho más oscuro (antes #64748b) */
+    font-weight: normal; 
+}
+
+/* Peu de pàgina */
+footer { 
+    background: #090d16; 
+    color: #cbd5e1; 
+    padding: 32px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    border-top: 1px solid #1e293b; 
+    font-size: 12px; 
+    flex-wrap: wrap; 
+    gap: 24px; 
+}
+
+footer h4 { 
+    color: #fff; 
+    margin: 0 0 8px; 
+    font-size: 13px; 
+}
+
+footer p { 
+    margin: 0 0 6px; 
+}
+
+@media (max-width: 768px) {
+    .hero { 
+        grid-template-columns: 1fr; 
+    }
+}

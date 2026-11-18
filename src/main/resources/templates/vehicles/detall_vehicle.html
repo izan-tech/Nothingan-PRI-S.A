@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Detall del Vehicle - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark m-0">Fitxa del Vehicle</h2>
+                    <p class="text-muted small mb-0 mt-1">Especificacions completes i estat del vehicle de la flota.</p>
+                </div>
+                <div>
+                    <a th:href="@{'/dashboard/reserves/nova?matricula=' + ${vehicle.matricula}}" class="btn btn-primary me-2 fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-regular fa-calendar-check me-1"></i> Reservar Vehicle
+                    </a>
+                    <a th:href="@{'/dashboard/vehicles/editar/' + ${vehicle.matricula}}" class="btn btn-outline-primary me-2 fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                    </a>
+                    <a th:href="@{/dashboard/vehicles}" class="btn btn-secondary fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Tornar a la flota
+                    </a>
+                </div>
+            </div>
+
+            <div class="detail-card shadow-sm mb-4">
+                <div class="row align-items-center pb-4 mb-4 border-bottom">
+                    <div class="col-auto">
+                        <img th:if="${vehicle.foto != null and !vehicle.foto.isBlank()}"
+                             th:src="@{'/uploads/vehicles/' + ${vehicle.foto}}"
+                             alt="Foto Vehicle" class="rounded border" style="width: 140px; height: 90px; object-fit: cover;">
+                        <div th:unless="${vehicle.foto != null and !vehicle.foto.isBlank()}" 
+                             class="rounded bg-light text-muted border d-flex align-items-center justify-content-center" 
+                             style="width: 140px; height: 90px;">
+                            <i class="fa-solid fa-car fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3 class="fw-bold text-dark m-0" th:text="${vehicle.marca + ' ' + vehicle.model}">Toyota Yaris</h3>
+                        <p class="text-muted mb-2" th:text="'Matrícula: ' + ${vehicle.matricula}">4823KLP</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge" 
+                                  th:classappend="${vehicle.actiu ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}"
+                                  th:text="${vehicle.actiu ? 'Actiu a la flota' : 'Inactiu'}">Actiu</span>
+                            <span class="badge bg-primary-subtle text-primary" th:text="${vehicle.estat}">DISPONIBLE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Especificacions generals -->
+                <h5 class="fw-bold text-primary mb-3">1. Especificacions del vehicle</h5>
+                <div class="row g-4 border-bottom pb-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="label-title">Matrícula</div>
+                        <div class="value-text fw-semibold" th:text="${vehicle.matricula}">4823KLP</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Marca</div>
+                        <div class="value-text" th:text="${vehicle.marca}">Toyota</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Model</div>
+                        <div class="value-text" th:text="${vehicle.model}">Yaris</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Tipus / Categoria</div>
+                        <div class="value-text" th:text="${vehicle.tipusVehicle}">Turisme</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Any de matriculació</div>
+                        <div class="value-text" th:text="${vehicle.anyMatriculacio}">2024</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Estat operatiu</div>
+                        <div class="value-text" th:text="${vehicle.estat}">DISPONIBLE</div>
+                    </div>
+                </div>
+
+                <!-- Dates d'activació / desactivació si n'hi ha -->
+                <div class="row g-4 border-bottom pb-4 mb-4" 
+                     th:if="${vehicle.dataDesactivacio != null or vehicle.dataActivacio != null}">
+                    <div class="col-md-4" th:if="${vehicle.dataDesactivacio != null}">
+                        <div class="label-title">Última data de desactivació</div>
+                        <div class="value-text" th:text="${#temporals.format(vehicle.dataDesactivacio, 'dd/MM/yyyy')}">01/01/2026</div>
+                    </div>
+
+                    <div class="col-md-4" th:if="${vehicle.dataFiDesactivacio != null}">
+                        <div class="label-title">Data prevista fi desactivació</div>
+                        <div class="value-text" th:text="${#temporals.format(vehicle.dataFiDesactivacio, 'dd/MM/yyyy')}">10/01/2026</div>
+                    </div>
+
+                    <div class="col-md-4" th:if="${vehicle.dataActivacio != null}">
+                        <div class="label-title">Última data d'activació</div>
+                        <div class="value-text" th:text="${#temporals.format(vehicle.dataActivacio, 'dd/MM/yyyy')}">10/01/2026</div>
+                    </div>
+
+                    <div class="col-md-4" th:if="${vehicle.motiuActivacio != null and !vehicle.motiuActivacio.isBlank()}">
+                        <div class="label-title">Últim motiu d'activació</div>
+                        <div class="value-text" th:text="${vehicle.motiuActivacio}">Manteniment</div>
+                    </div>
+
+                    <div class="col-md-4" th:if="${vehicle.importActivacio != null}">
+                        <div class="label-title">Import última intervenció</div>
+                        <div class="value-text" th:text="${#numbers.formatDecimal(vehicle.importActivacio, 1, 2) + ' €'}">50.00 €</div>
+                    </div>
+                </div>
+
+                <!-- 2. Tarifes i condicions de lloguer -->
+                <h5 class="fw-bold text-primary mb-3">2. Tarifes i condicions</h5>
+                <div class="row g-4 border-bottom pb-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="label-title">Preu per hora</div>
+                        <div class="value-text" th:text="${#numbers.formatDecimal(vehicle.preuHora, 1, 2) + ' €'}">45.00 €</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Fiança requerida</div>
+                        <div class="value-text" th:text="${#numbers.formatDecimal(vehicle.fianca, 1, 2) + ' €'}">300.00 €</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Límit de quilometratge</div>
+                        <div class="value-text" th:text="${vehicle.limitQuilometratge != null ? vehicle.limitQuilometratge + ' km' : 'Sense límit'}">400 km</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Mínim de dies de lloguer</div>
+                        <div class="value-text" th:text="${vehicle.minDiesLloguer + (vehicle.minDiesLloguer == 1 ? ' dia' : ' dies')}">1 dia</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="label-title">Màxim de dies de lloguer</div>
+                        <div class="value-text" th:text="${vehicle.maxDiesLloguer + (vehicle.maxDiesLloguer == 1 ? ' dia' : ' dies')}">30 dies</div>
+                    </div>
+                </div>
+
+                <!-- 3. Descripció i comentaris interns -->
+                <h5 class="fw-bold text-primary mb-3">3. Descripció i observacions</h5>
+                <div class="row g-4 border-bottom pb-4 mb-4">
+                    <div class="col-12">
+                        <div class="label-title">Descripció pública</div>
+                        <div class="value-text" style="white-space: pre-line;" th:text="${vehicle.descripcio}">Descripció del vehicle</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="label-title">Comentaris privats (Ús intern)</div>
+                        <div class="value-text text-muted" style="white-space: pre-line;"
+                             th:text="${(vehicle.comentarisPrivats != null and !vehicle.comentarisPrivats.isBlank()) ? vehicle.comentarisPrivats : 'Sense comentaris privats registrats.'}">
+                            Sense comentaris privats
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===================== RESSENYES (només lectura) ===================== -->
+                <h4 class="fw-bold text-dark mb-3">Ressenyes</h4>
+
+                <!-- Missatges -->
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${succes}" class="alert alert-success" th:text="${succes}"></div>
+
+                <!-- Llista de ressenyes -->
+                <p class="text-muted" th:if="${resenyes == null or #lists.isEmpty(resenyes)}">Encara no hi ha ressenyes.</p>
+
+                <div th:each="r : ${resenyes}" class="border-bottom py-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong th:text="${r.client.nom}">Client</strong>
+                            <span class="text-muted small ms-2"
+                                  th:text="${#temporals.format(r.dataCreacio, 'dd/MM/yyyy')}">01/01/2026</span>
+                        </div>
+                        <!-- Moderació: l'agent pot eliminar ressenyes inapropiades -->
+                        <form th:action="@{'/dashboard/vehicles/' + ${vehicle.matricula} + '/resenyes/' + ${r.idRessenya} + '/eliminar'}"
+                              method="post" onsubmit="return confirm('Eliminar aquesta ressenya?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="text-warning">
+                        <i th:each="i : ${#numbers.sequence(1, 5)}"
+                           th:class="${i <= r.puntuacio} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                    </div>
+
+                    <p class="mb-0 mt-1" style="white-space: pre-line;"
+                       th:if="${r.comentari != null}" th:text="${r.comentari}"></p>
+                </div>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

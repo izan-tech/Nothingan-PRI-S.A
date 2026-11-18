@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestió de Clients - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark m-0">Gestió de Clients</h2>
+                    <p class="text-muted small mb-0 mt-1">Consulteu, filtreu i gestioneu tots els clients registrats al sistema.</p>
+                </div>
+                <a th:href="@{/dashboard/clients/altaUsuari}" class="btn btn-primary fw-semibold px-4 py-2" style="border-radius: 8px;">
+                    + Afegir nou client
+                </a>
+            </div>
+
+            <!-- Alertes Flash -->
+            <div th:if="${missatge != null or succes != null}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i>
+                <span th:text="${missatge != null ? missatge : succes}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Targeta de Filtres -->
+            <div class="filter-card shadow-sm mb-4">
+                <form th:action="@{/dashboard/clients}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="nom" class="form-label">Nom i cognoms</label>
+                        <input type="text" id="nom" name="nom" class="form-control"
+                               placeholder="Ex. Joan Garcia" th:value="${nom}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="dni" class="form-label">DNI / NIE</label>
+                        <input type="text" id="dni" name="dni" class="form-control"
+                               placeholder="Ex. 12345678Z" th:value="${dni}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="telefon" class="form-label">Telèfon</label>
+                        <input type="tel" id="telefon" name="telefon" class="form-control"
+                               maxlength="9" inputmode="numeric"
+                               placeholder="Ex: 612345678" th:value="${telefon}"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="ciutat" class="form-label">Ciutat</label>
+                        <input type="text" id="ciutat" name="ciutat" class="form-control"
+                               placeholder="Ciutat de l'adreça" th:value="${ciutat}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="nacionalitat" class="form-label">Nacionalitat</label>
+                        <input type="text" id="nacionalitat" name="nacionalitat" class="form-control"
+                               placeholder="Ex. Espanyola" th:value="${nacionalitat}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="poblacio" class="form-label">Població</label>
+                        <input type="text" id="poblacio" name="poblacio" class="form-control"
+                               placeholder="Ex: Terrassa" th:value="${poblacio}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="email" class="form-label">Correu</label>
+                        <input type="text" id="email" name="email" class="form-control"
+                               placeholder="Ex: joan@gmail.com" th:value="${email}">
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                            <i class="fa-solid fa-filter me-1"></i> Filtrar
+                        </button>
+                        <a th:if="${(nom != null and !#strings.isEmpty(nom)) or (dni != null and !#strings.isEmpty(dni)) or (telefon != null and !#strings.isEmpty(telefon)) or (ciutat != null and !#strings.isEmpty(ciutat)) or (nacionalitat != null and !#strings.isEmpty(nacionalitat)) or (poblacio != null and !#strings.isEmpty(poblacio)) or (email != null and !#strings.isEmpty(email))}"
+                           th:href="@{/dashboard/clients}"
+                           class="btn btn-outline-danger"
+                           title="Netejar filtres">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Taula de Llistat de Clients -->
+            <div class="custom-table-card shadow-sm">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>CLIENT</th>
+                            <th>DNI / NIE</th>
+                            <th>CORREU ELECTRÒNIC</th>
+                            <th>TELÈFON</th>
+                            <th>ESTAT</th>
+                            <th class="text-end">ACCIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${clients}">
+                            <td>
+                                <a th:href="@{'/dashboard/clients/detall/' + ${c.dni}}" class="text-decoration-none">
+                                    <p class="agent-title m-0" th:text="${c.nom}">Joan Garcia</p>
+                                </a>
+                            </td>
+                            <td>
+                                <strong th:text="${c.dni}">12345678Z</strong>
+                            </td>
+                            <td th:text="${c.email}">client@email.com</td>
+                            <td th:text="${c.telefon != null and !#strings.isEmpty(c.telefon)} ? ${c.telefon} : '-'">600000000</td>
+
+                            <!-- Estat RF82 -->
+                            <td>
+                                <span th:if="${c.estatValidacio == 'VALIDAT'}"
+                                      class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
+                                    VALIDAT
+                                </span>
+                                <span th:if="${c.estatValidacio == 'PENDENT' or c.estatValidacio == null}"
+                                      class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 fw-bold">
+                                    PENDENT
+                                </span>
+                                <span th:if="${c.estatValidacio == 'REBUTJAT'}"
+                                      class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-bold">
+                                    REBUTJAT
+                                </span>
+                            </td>
+
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                    <a th:href="@{'/dashboard/reserves/nova?dni=' + ${c.dni}}" class="btn btn-primary btn-sm fw-semibold me-1" style="border-radius: 6px; padding: 6px 12px;" title="Crear reserva per a aquest client">
+                                        <i class="fa-regular fa-calendar-plus me-1"></i> Reserva
+                                    </a>
+                                    <a th:href="@{'/dashboard/clients/' + ${c.dni} + '/editar'}" class="btn btn-editar me-1">Editar</a>
+                                    <a th:href="@{'/dashboard/clients/detall/' + ${c.dni}}" class="btn btn-outline-secondary btn-sm me-1 fw-semibold" style="border-radius: 6px; padding: 6px 14px;">Detall</a>
+
+                                    <form th:action="@{'/dashboard/clients/' + ${c.dni} + '/eliminar'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Estàs segur de voler eliminar permanentment aquest client?');">
+                                        <button type="submit" class="btn btn-desactivar">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(clients)}">
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No s'han trobat clients que coincideixin amb el filtre seleccionat.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

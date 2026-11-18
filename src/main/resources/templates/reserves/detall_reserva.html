@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Detall de la Reserva - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body class="bg-light">
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 fw-bold text-dark m-0">Fitxa de la Reserva</h1>
+                    <p class="text-secondary small mb-0 mt-1">Informació detallada de la reserva.</p>
+                </div>
+                <div>
+                    <a th:if="${reserva.client != null}"
+                       th:href="@{'/dashboard/clients/' + ${reserva.client.dni}}"
+                       class="btn btn-outline-primary me-2 fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-solid fa-user me-1" aria-hidden="true"></i> Veure client
+                    </a>
+                    <a th:href="@{/dashboard/reserves}" class="btn btn-secondary fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> Tornar al llistat
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${missatge}" class="alert alert-success" role="alert" th:text="${missatge}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <div class="detail-card shadow-sm mb-4">
+
+                <!-- CAPÇALERA DE LA TARGETA -->
+                <div class="row align-items-center pb-4 mb-4 border-bottom">
+                    <div class="col-auto">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-3"
+                             style="width: 90px; height: 90px;">
+                            <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h2 class="h3 fw-bold text-dark m-0" th:text="'Reserva #' + ${reserva.codiReserva}">Reserva #1</h2>
+                        <p class="text-secondary mb-2"
+                           th:if="${reserva.client != null}"
+                           th:text="'Client: ' + ${reserva.client.nom} + ' (' + ${reserva.client.dni} + ')'">Client</p>
+
+                        <span th:if="${reserva.estat == 'EN_CURS' or reserva.estat == 'ACTIVA'}"
+                              class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
+                            EN CURS
+                        </span>
+                        <span th:if="${reserva.estat == 'PENDENT'}"
+                              class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 fw-bold">
+                            PENDENT
+                        </span>
+                        <span th:if="${reserva.estat == 'FINALITZADA'}"
+                              class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 fw-bold">
+                            FINALITZADA
+                        </span>
+                        <span th:if="${reserva.estat == 'CANCELADA'}"
+                              class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-bold">
+                            CANCELADA
+                        </span>
+                    </div>
+
+                    <!-- ACCIONS -->
+                    <div class="col-auto d-flex gap-2">
+                        <a th:if="${reserva.estat != 'EN_CURS' and reserva.estat != 'FINALITZADA' and reserva.estat != 'CANCELADA'}"
+                           th:href="@{/dashboard/reserves/{codi}/anular(codi=${reserva.codiReserva})}"
+                           class="btn btn-outline-danger fw-semibold px-3 py-2" style="border-radius: 8px;">
+                            <i class="fa-solid fa-ban me-1" aria-hidden="true"></i> Anul·lar reserva
+                        </a>
+                        <form th:action="@{'/dashboard/reserves/' + ${reserva.codiReserva} + '/eliminar'}" method="post"
+                              onsubmit="return confirm('Segur que vols eliminar aquesta reserva?');">
+                            <button type="submit" class="btn btn-danger fw-semibold px-3 py-2" style="border-radius: 8px;">
+                                <i class="fa-solid fa-trash me-1" aria-hidden="true"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- DADES DE LA RESERVA -->
+                <div class="row g-4 border-bottom pb-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="label-title">Codi de reserva</div>
+                        <div class="value-text" th:text="${reserva.codiReserva}">1</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="label-title">Estat</div>
+                        <div class="value-text" th:text="${reserva.estat}">ACTIVA</div>
+                    </div>
+                    <div class="col-md-6" th:if="${reserva.estat == 'CANCELADA' and reserva.anulacioMotiu != null and !#strings.isEmpty(reserva.anulacioMotiu)}">
+                        <div class="label-title">Motiu d'anul·lació</div>
+                        <div class="value-text" th:text="${reserva.anulacioMotiu}">Motiu</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="label-title">Data d'inici</div>
+                        <div class="value-text" th:text="${reserva.dataInici}">2026-11-03</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="label-title">Hora d'inici</div>
+                        <div class="value-text" th:text="${reserva.horaInici}">10:00</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="label-title">Data de fi</div>
+                        <div class="value-text" th:text="${reserva.dataFi}">2026-11-05</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="label-title">Hora de fi</div>
+                        <div class="value-text" th:text="${reserva.horaFi}">18:00</div>
+                    </div>
+                </div>
+
+                <!-- BLOC D'OBSERVACIONS I FOTOS (PROCESSAT VISUALMENT) -->
+                <div class="border-bottom pb-4 mb-4">
+                    <h2 class="h4 fw-bold text-dark mb-3">
+                        <i class="fa-solid fa-clipboard-check me-2 text-primary" aria-hidden="true"></i>Registre d'Estat del Vehicle i Fotos
+                    </h2>
+
+                    <!-- Div ocult amb el text pla original -->
+                    <div id="rawObservacions" th:text="${reserva.observacions != null and !#strings.isEmpty(reserva.observacions) ? reserva.observacions : ''}" style="display: none;"></div>
+
+                    <!-- Contenidor on es renderitzen les seccions i galeries -->
+                    <div id="contenedorObservacions">
+                        <div class="text-secondary small fst-italic" id="emptyObsText">No hi ha observacions o fotos enregistrades.</div>
+                    </div>
+                </div>
+
+                <!-- CLIENT -->
+                <h2 class="h4 fw-bold text-dark mb-3">Client</h2>
+                <div class="row g-4 border-bottom pb-4 mb-4" th:if="${reserva.client != null}">
+                    <div class="col-md-6">
+                        <div class="label-title">Nom complet</div>
+                        <div class="value-text" th:text="${reserva.client.nom}">Nom del Client</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="label-title">DNI / NIE</div>
+                        <div class="value-text" th:text="${reserva.client.dni}">12345678Z</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="label-title">Correu electrònic</div>
+                        <div class="value-text" th:text="${reserva.client.email}">client@email.com</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="label-title">Telèfon de contacte</div>
+                        <div class="value-text"
+                             th:text="${reserva.client.telefon != null and !#strings.isEmpty(reserva.client.telefon) ? reserva.client.telefon : '-'}">600000000</div>
+                    </div>
+                </div>
+
+                <!-- VEHICLE -->
+                <h2 class="h4 fw-bold text-dark mb-3">Vehicle</h2>
+                <div class="row g-4" th:if="${reserva.vehicle != null}">
+                    <div class="col-md-4">
+                        <div class="label-title">Matrícula</div>
+                        <div class="value-text" th:text="${reserva.vehicle.matricula}">1234ABC</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="label-title">Marca</div>
+                        <div class="value-text" th:text="${reserva.vehicle.marca}">Marca</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="label-title">Model</div>
+                        <div class="value-text" th:text="${reserva.vehicle.model}">Model</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+                                  function escapeHtml(text) {
+                                      const div = document.createElement('div');
+                                      div.textContent = text;
+                                      return div.innerHTML;
+                                  }
+
+                                  document.addEventListener("DOMContentLoaded", function () {
+                                      const rawContainer = document.getElementById('rawObservacions');
+                                      const container = document.getElementById('contenedorObservacions');
+                                      if (!rawContainer)
+                                          return;
+
+                                      const rawText = rawContainer.innerText.trim();
+                                      if (!rawText || rawText === '-')
+                                          return;
+
+                                      container.innerHTML = "";
+
+                                      // Separar pels indicadors [Lliurament i [Retorn
+                                      const regexSplit = /(?=\[(?:Lliurament|Retorn))/g;
+                                      const blocs = rawText.split(regexSplit).filter(b => b.trim() !== "");
+
+                                      blocs.forEach(bloc => {
+                                          const isLliurament = bloc.includes("[Lliurament");
+                                          const isRetorn = bloc.includes("[Retorn");
+
+                                          if (!isLliurament && !isRetorn) {
+                                              const infoDiv = document.createElement('div');
+                                              infoDiv.className = "alert alert-secondary mb-3 small";
+                                              infoDiv.innerHTML = `<strong>Observacions generals:</strong> ${escapeHtml(bloc.trim())}`;
+                                              container.appendChild(infoDiv);
+                                              return;
+                                          }
+
+                                          const titolSeccio = isLliurament ? "Lliurament del Vehicle" : "Retorn del Vehicle";
+                                          const badgeColor = isLliurament ? "bg-primary" : "bg-success";
+                                          const icona = isLliurament ? "fa-key" : "fa-flag-checkered";
+
+                                          // Extreure la data (YYYY-MM-DD) i l'hora opcional (HH:mm)
+                                          let dataHoraFormatejada = "";
+                                          const matchHeader = bloc.match(/\[(?:Lliurament|Retorn)\s+(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2})(?::\d{2})?)?\]/);
+                                          if (matchHeader && matchHeader[1]) {
+                                              const partsData = matchHeader[1].split("-");
+                                              dataHoraFormatejada = `${partsData[2]}/${partsData[1]}/${partsData[0]}`;
+                                              if (matchHeader[2]) {
+                                                  dataHoraFormatejada += ` · ${matchHeader[2]}h`;
+                                              }
+                                          }
+
+                                          // 1. Extreure fotos addicionals amb títol i descripció: [FotoExtra|url|titol|descripcio]
+                                          const extraRegex = /\[FotoExtra\|([^|\]]+)\|([^|\]]*)\|([^\]]*)\]/g;
+                                          const fotosExtres = [];
+                                          let matchExtra;
+                                          while ((matchExtra = extraRegex.exec(bloc)) !== null) {
+                                              fotosExtres.push({
+                                                  url: matchExtra[1].trim(),
+                                                  titol: matchExtra[2].trim() || "Foto addicional",
+                                                  descripcio: matchExtra[3].trim()
+                                              });
+                                          }
+
+                                          // Treure els blocs [FotoExtra|...] abans d'extreure les 4 fotos estàndard
+                                          const blocSenseExtres = bloc.replace(extraRegex, '');
+
+                                          // 2. Extreure les 4 fotos estàndard
+                                          const urlRegex = /(\/uploads\/vehicles\/[^\s]+?\.(?:jpg|jpeg|png|webp))/gi;
+                                          const fotosCostats = blocSenseExtres.match(urlRegex) || [];
+
+                                          // Netejar text d'observacions
+                                          let textNetejat = blocSenseExtres
+                                                  .replace(/\[(?:Lliurament|Retorn).*?\]:\s*/gi, '')
+                                                  .replace(urlRegex, '')
+                                                  .replace(/Fotos (?:lliurament|retorn):\s*\.?/gi, '')
+                                                  .trim();
+
+                                          const cardBloc = document.createElement('div');
+                                          cardBloc.className = "p-3 bg-light rounded border mb-4";
+
+                                          let headerHtml = `
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge ${badgeColor} fs-6">
+                                    <i class="fa-solid ${icona} me-1" aria-hidden="true"></i> ${titolSeccio}
+                                </span>
+                                ${dataHoraFormatejada ? `
+                                    <span class="badge bg-white text-dark border px-2 py-1 fs-6">
+                                        <i class="fa-regular fa-calendar me-1 text-primary" aria-hidden="true"></i>${dataHoraFormatejada}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ${textNetejat ? `<p class="text-dark mb-3 small fw-medium">${escapeHtml(textNetejat)}</p>` : ''}
+                    `;
+
+                                          let fotosHtml = "";
+                                          if (fotosCostats.length > 0) {
+                                              fotosHtml += `<h3 class="h6 fw-bold text-dark mb-2 extra-small text-uppercase text-secondary">Fotografies enregistrades (4 costats)</h3>`;
+                                              fotosHtml += `<div class="row row-cols-2 row-cols-md-4 g-3 mb-3">`;
+
+                                              fotosCostats.forEach(fotoUrl => {
+                                                  let nomCostat = "Fotografia";
+                                                  const urlLower = fotoUrl.toLowerCase();
+
+                                                  if (urlLower.includes("frontal"))
+                                                      nomCostat = "Frontal";
+                                                  else if (urlLower.includes("posterior"))
+                                                      nomCostat = "Posterior";
+                                                  else if (urlLower.includes("lateral_esquerre"))
+                                                      nomCostat = "Lateral Esquerre";
+                                                  else if (urlLower.includes("lateral_dret"))
+                                                      nomCostat = "Lateral Dret";
+
+                                                  fotosHtml += `
+                                <div class="col text-center">
+                                    <div class="card h-100 border shadow-sm p-1 bg-white">
+                                        <span class="badge bg-dark text-white mb-1 py-1 extra-small">${nomCostat}</span>
+                                        <a href="${fotoUrl}" target="_blank" rel="noopener noreferrer" title="Fes clic per ampliar la imatge (${nomCostat})">
+                                            <img src="${fotoUrl}" class="card-img-top rounded"
+                                                 style="height: 120px; object-fit: cover;"
+                                                 alt="${titolSeccio} - ${nomCostat}"
+                                                 onerror="this.src='https://via.placeholder.com/200x120?text=Sense+Imatge'">
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                                              });
+
+                                              fotosHtml += `</div>`;
+                                          }
+
+                                          // Renderitzar fotos addicionals il·limitades amb títol i descripció
+                                          if (fotosExtres.length > 0) {
+                                              fotosHtml += `<h3 class="h6 fw-bold text-dark mb-2 mt-3 extra-small text-uppercase text-secondary">Fotos addicionals i detall de danys (${fotosExtres.length})</h3>`;
+                                              fotosHtml += `<div class="row row-cols-1 row-cols-md-2 g-3">`;
+
+                                              fotosExtres.forEach((item, idx) => {
+                                                  const titolSegur = escapeHtml(item.titol);
+                                                  const descSegura = escapeHtml(item.descripcio);
+
+                                                  fotosHtml += `
+                                <div class="col">
+                                    <div class="card h-100 border shadow-sm bg-white overflow-hidden">
+                                        <div class="row g-0 h-100">
+                                            <div class="col-5">
+                                                <a href="${item.url}" target="_blank" rel="noopener noreferrer" title="Ampliar: ${titolSegur}">
+                                                    <img src="${item.url}" class="w-100 h-100"
+                                                         style="min-height: 120px; max-height: 160px; object-fit: cover;"
+                                                         alt="${titolSegur}"
+                                                         onerror="this.src='https://via.placeholder.com/200x140?text=Sense+Imatge'">
+                                                </a>
+                                            </div>
+                                            <div class="col-7 p-2 d-flex flex-column justify-content-center">
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle align-self-start mb-1 extra-small">
+                                                    Foto extra #${idx + 1}
+                                                </span>
+                                                <div class="fw-bold text-dark small mb-1">${titolSegur}</div>
+                                                ${descSegura ? `<p class="text-secondary extra-small mb-0">${descSegura}</p>` : '<p class="text-secondary extra-small fst-italic mb-0">Sense descripció addicional.</p>'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                                              });
+
+                                              fotosHtml += `</div>`;
+                                          }
+
+                                          cardBloc.innerHTML = headerHtml + fotosHtml;
+                                          container.appendChild(cardBloc);
+                                      });
+                                  });
+        </script>
+    </body>
+</html>

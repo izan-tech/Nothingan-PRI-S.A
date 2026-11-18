@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Registre de Client - NOTHINGAN PRI S.A.</title>
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/cataleg.css}">
+        <link rel="stylesheet" th:href="@{/registre.css}">
+    </head>
+    <body>
+
+        <!-- Header corporatiu (Enllaç del logo apunta a Home) -->
+        <header>
+            <a th:href="@{/}" class="marca">
+                <div class="logo">NP</div>
+                <div>
+                    <strong>NOTHINGAN PRI S.A.</strong>
+                    <small>PORTAL CLIENT</small>
+                </div>
+            </a>
+
+            <div class="nav-header">
+                <a th:href="@{/cataleg}">Catàleg</a>
+                <div class="accés-usuaris">
+                    <a th:href="@{/login}" class="btn btn-login">
+                        Iniciar sessió
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Formulari de Registre -->
+        <div class="registre-container">
+            <h2>Sol·licitud de Registre de Client</h2>
+            <p class="registre-subtitol">Completeu les vostres dades personals i documentació per activar el compte de client.</p>
+
+            <!-- Avisos d'error -->
+            <div th:if="${error}" class="alert-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}">Error</span>
+                <br>
+                <small>Les teves dades s'han conservat, però has de tornar a escriure la contrasenya, les dades de la targeta i a adjuntar les tres fotos.</small>
+            </div>
+
+            <form th:action="@{/registre}" th:object="${client}" method="post" enctype="multipart/form-data" class="form-grid">
+
+                <div class="seccio-títol">1. Dades personals i d'accés</div>
+
+                <div class="form-grup full-width">
+                    <label>Nom complet (com figura al DNI) *</label>
+                    <input type="text" th:field="*{nom}" placeholder="Ex: Joan Garcia i Soler" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>DNI / NIE / Passaport *</label>
+                    <input type="text" th:field="*{dni}" placeholder="Ex: 12345678Z" maxlength="9" required
+                           oninput="this.value = this.value.toUpperCase()">
+                </div>
+
+                <div class="form-grup">
+                    <label>Data de caducitat del DNI *</label>
+                    <input type="date" th:field="*{dataCaducitatDNI}" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Adreça electrònica *</label>
+                    <input type="email" th:field="*{email}" placeholder="Ex: joan@gmail.com" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Contrasenya per al portal *</label>
+                    <input type="password" th:field="*{password}" placeholder="Mínim 8 caràcters" minlength="8" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Telèfon de contacte *</label>
+                    <input type="tel" th:field="*{telefon}" required
+                           maxlength="9" minlength="9" inputmode="numeric"
+                           pattern="[0-9]{9}"
+                           title="Introdueix exactament 9 xifres, sense espais ni lletres"
+                           placeholder="Ex: 612345678"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+
+                <div class="form-grup">
+                    <label>Data de naixement *</label>
+                    <input type="date" th:field="*{dataNaixement}" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Nacionalitat *</label>
+                    <input type="text" th:field="*{nacionalitat}" placeholder="Ex: Espanyola" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Adreça completa *</label>
+                    <input type="text" th:field="*{adreca}" placeholder="Ex: Carrer Major 12, Terrassa" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Població *</label>
+                    <input type="text" th:field="*{poblacio}" placeholder="Ex: Terrassa" required>
+                </div>
+
+                <div class="seccio-títol">2. Permís de conduir</div>
+
+                <div class="form-grup">
+                    <label>Tipus de llicència *</label>
+                    <select th:field="*{tipusLlicencia}" required>
+                        <option value="" th:selected="${client.tipusLlicencia == null or client.tipusLlicencia == ''}" disabled>Selecciona un tipus</option>
+                        <option value="B">B (Automòbils)</option>
+                        <option value="A">A (Motocicletes)</option>
+                        <option value="C">C (Camions)</option>
+                    </select>
+                </div>
+
+                <div class="form-grup">
+                    <label>Data de caducitat del carnet de conduir *</label>
+                    <input type="date" th:field="*{dataCaducitatCarnet}" required>
+                </div>
+
+                <div class="seccio-títol">3. Verificació d'identitat (Imatges max 5MB)</div>
+
+                <div class="form-grup">
+                    <label>Foto DNI Frontal *</label>
+                    <input type="file" name="fotoDniFrontal" accept="image/png, image/jpeg" required>
+                </div>
+
+                <div class="form-grup">
+                    <label>Foto DNI Posterior *</label>
+                    <input type="file" name="fotoDniPosterior" accept="image/png, image/jpeg" required>
+                </div>
+
+                <div class="form-grup full-width">
+                    <label>Foto Carnet de Conduir *</label>
+                    <input type="file" name="fotoCarnet" accept="image/png, image/jpeg" required>
+                </div>
+
+                <div class="seccio-títol">4. Targeta de crèdit</div>
+
+                <div class="form-grup full-width">
+                    <label>Número de targeta *</label>
+                    <input type="text" name="numTargeta" required
+                           inputmode="numeric" maxlength="19" autocomplete="off"
+                           placeholder="Ex: 4111111111111111"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+
+                <div class="form-grup">
+                    <label>Data de caducitat (MM/AA) *</label>
+                    <input type="text" name="targetaCaducitat" required
+                           inputmode="numeric" maxlength="5" autocomplete="off"
+                           placeholder="MM/AA"
+                           pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+                           title="Format MM/AA, per exemple 09/28"
+                           oninput="
+                           let v = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+                           if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+                           this.value = v;">
+                </div>
+
+                <div class="form-grup">
+                    <label>Codi de seguretat (CVV) *</label>
+                    <input type="password" name="cvv" required
+                           inputmode="numeric" maxlength="4" minlength="3" autocomplete="off"
+                           placeholder="3 o 4 xifres"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+
+                <div class="form-grup full-width">
+                    <button type="submit" class="btn-enviar-registre">
+                        Enviar sol·licitud de registre
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </body>
+</html>

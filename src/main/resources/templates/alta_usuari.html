@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ca" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registre de nou client</title>
+    <link rel="stylesheet" th:href="@{/alta_usuari.css}">
+</head>
+<body>
+
+<header>
+    <div></div>
+    <div class="titol"><strong>NOTHINGAN PRI S.A.</strong> | Portal Client</div>
+    <a class="btn-inici" th:href="@{/}">Tornar a l'inici</a>
+</header>
+
+<main>
+    <h1>Registre de nou client</h1>
+    <p class="subtitol">Ompli el següent formulari per sol·licitar l'alta en el nostre sistema de lloguer de vehicles.</p>
+
+    <div class="targeta">
+
+        <div class="ok" th:if="${missatge}" th:text="${missatge}"></div>
+        <div class="error" th:if="${error}" th:text="${error}"></div>
+
+        <form th:action="@{/clients/alta}" th:object="${client}" method="post" enctype="multipart/form-data">
+
+            <!-- 1. Dades personals -->
+            <h2>1. Dades personals i d'accés</h2>
+            <div class="fila">
+                <div>
+                    <label for="nom">Nom complet (com figura al DNI)</label>
+                    <input type="text" id="nom" th:field="*{nom}" placeholder="Ex: Joan Garcia i Soler" required>
+                </div>
+                <div>
+                    <label for="dni">Número d'identificació (DNI / NIE / Passaport)</label>
+                    <input type="text" id="dni" th:field="*{dni}" placeholder="Ex: 12345678Z" maxlength="9" required>
+                </div>
+            </div>
+            <div class="fila">
+                <div>
+                    <label for="nacionalitat">Nacionalitat</label>
+                    <input type="text" id="nacionalitat" th:field="*{nacionalitat}" placeholder="Ex: Espanyola" required>
+                </div>
+                <div>
+                    <label for="adreca">Adreça completa</label>
+                    <input type="text" id="adreca" th:field="*{adreca}" placeholder="Ex: Carrer Major 12, Terrassa" required>
+                </div>
+            </div>
+            <div class="fila">
+                <div>
+                    <label for="email">Adreça electrònica</label>
+                    <input type="email" id="email" th:field="*{email}" placeholder="Ex: joan@gmail.com" required>
+                </div>
+                <div>
+                    <label for="contrasenya">Contrasenya per al portal</label>
+                    <input type="password" id="contrasenya" name="contrasenya" placeholder="Mínim 8 caràcters"
+                           minlength="8" required>
+                </div>
+            </div>
+
+            <div class="fila">
+                <div>
+                    <label for="dataNaixement">Data de naixement</label>
+                    <input type="date" id="dataNaixement" th:field="*{dataNaixement}" required>
+                </div>
+                <div>
+                    <label for="telefon">Telèfon de contacte</label>
+                    <input type="tel" id="telefon" th:field="*{telefon}" placeholder="Ex: 612 345 678"
+                           pattern="[0-9 +]{9,15}" title="Entre 9 i 15 xifres (es permeten espais i +)" required>
+                </div>
+            </div>
+
+            <!-- 2. Verificació d'identitat -->
+            <h2>2. Verificació d'identitat (DNI / Passaport)</h2>
+            <div class="fila">
+                <div>
+                    <label>Foto frontal del DNI/Passaport</label>
+                    <label class="pujada">
+                        <div class="enllac">Puja el fitxer o arrossega'l</div>
+                        <div class="ajuda">PNG o JPG d'alta resolució, màxim 5MB</div>
+                        <img class="previa" alt="Vista prèvia">
+                        <div class="nomfitxer"></div>
+                        <input type="file" name="fotoDniFrontal" accept="image/png,image/jpeg" required>
+                    </label>
+                </div>
+                <div>
+                    <label>Foto posterior del DNI</label>
+                    <label class="pujada">
+                        <div class="enllac">Puja el fitxer o arrossega'l</div>
+                        <div class="ajuda">PNG o JPG d'alta resolució, màxim 5MB</div>
+                        <img class="previa" alt="Vista prèvia">
+                        <div class="nomfitxer"></div>
+                        <input type="file" name="fotoDniPosterior" accept="image/png,image/jpeg" required>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 3. Permís de conduir -->
+            <h2>3. Permís de conduir actiu</h2>
+            <div class="fila">
+                <div>
+                    <label for="tipusLlicencia">Tipus de llicència (Ex: B, C, etc.)</label>
+                    <input type="text" id="tipusLlicencia" th:field="*{tipusLlicencia}" placeholder="Ex: B" required>
+                </div>
+                <div>
+                    <label for="dataCaducitatDNI">Data de caducitat</label>
+                    <input type="date" id="dataCaducitatDNI" th:field="*{dataCaducitatDNI}" required>
+                </div>
+            </div>
+            <div class="fila">
+                <div>
+                    <label for="dataCaducitatCarnet">Data de caducitat del carnet de conduir</label>
+                    <input type="date" id="dataCaducitatCarnet" th:field="*{dataCaducitatCarnet}" required>
+                </div>
+            </div>
+            <div class="fila una">
+                <div>
+                    <label>Imatge del carnet de conduir (Frontal)</label>
+                    <label class="pujada">
+                        <div class="enllac">Puja el fitxer o arrossega'l</div>
+                        <div class="ajuda">Ha de veure's clarament el número i la data d'expedició</div>
+                        <img class="previa" alt="Vista prèvia">
+                        <div class="nomfitxer"></div>
+                        <input type="file" name="fotoCarnet" accept="image/png,image/jpeg" required>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. Facturació -->
+            <h2>4. Informació de facturació i pagament (Targeta)</h2>
+            <div class="fila tres">
+                <div>
+                    <label for="numTargeta">Número de targeta de crèdit</label>
+                    <input type="text" id="numTargeta" name="numTargeta" placeholder="0000 0000 0000 0000"
+                           inputmode="numeric" autocomplete="cc-number" maxlength="19">
+                </div>
+                <div>
+                    <label for="venciment">Venciment</label>
+                    <input type="text" id="venciment" name="venciment" placeholder="MM/AA"
+                           autocomplete="cc-exp" maxlength="5">
+                </div>
+                <div>
+                    <label for="cvc">CVC</label>
+                    <input type="text" id="cvc" name="cvc" placeholder="123"
+                           inputmode="numeric" autocomplete="cc-csc" maxlength="4">
+                </div>
+            </div>
+
+            <div class="avis">
+                ⓘ El registre serà revisat per l'administrador de Nothingan Pri S.A. abans de poder fer reserves actives.
+            </div>
+
+            <button type="submit">Enviar sol·licitud de registre</button>
+        </form>
+    </div>
+</main>
+
+<script>
+document.querySelectorAll('.pujada').forEach(function (zona) {
+    var input = zona.querySelector('input[type=file]');
+    var img = zona.querySelector('.previa');
+    var nom = zona.querySelector('.nomfitxer');
+    var enllac = zona.querySelector('.enllac');
+    var textOriginal = enllac.textContent;
+    var MAX = 5 * 1024 * 1024;
+
+    function mostra() {
+        var f = input.files[0];
+        zona.classList.remove('te-fitxer', 'error-fitxer');
+        if (img.dataset.url) { URL.revokeObjectURL(img.dataset.url); img.dataset.url = ''; }
+        if (!f) { enllac.textContent = textOriginal; return; }
+        if (['image/png', 'image/jpeg'].indexOf(f.type) === -1 || f.size > MAX) {
+            input.value = '';
+            zona.classList.add('error-fitxer');
+            enllac.textContent = 'Fitxer no vàlid (PNG o JPG, màxim 5MB)';
+            return;
+        }
+        var url = URL.createObjectURL(f);
+        img.src = url;
+        img.dataset.url = url;
+        nom.textContent = f.name + ' (' + Math.round(f.size / 1024) + ' KB)';
+        enllac.textContent = 'Canvia el fitxer';
+        zona.classList.add('te-fitxer');
+    }
+
+    input.addEventListener('change', mostra);
+    ['dragenter', 'dragover'].forEach(function (ev) {
+        zona.addEventListener(ev, function (e) { e.preventDefault(); zona.classList.add('arrossegant'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        zona.addEventListener(ev, function (e) { e.preventDefault(); zona.classList.remove('arrossegant'); });
+    });
+    zona.addEventListener('drop', function (e) {
+        if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; mostra(); }
+    });
+});
+</script>
+
+</body>
+</html>

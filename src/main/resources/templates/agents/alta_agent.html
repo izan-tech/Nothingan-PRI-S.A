@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Registre / Edició d'Agent - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Referència al CSS en resources/static/agents.css -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark m-0" th:text="${esEdicio} ? 'Modificació d\'Agent' : 'Registre de Nou Empleat'">Registre de nou empleat</h2>
+                    <p class="text-muted small mb-0 mt-1">Ompli el següent formulari per gestionar les dades de l'agent al sistema.</p>
+                </div>
+                <a th:href="@{/dashboard/agents/llista}" class="btn btn-outline-secondary fw-semibold px-3 py-2" style="border-radius: 8px;">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Tornar al llistat
+                </a>
+            </div>
+
+            <div class="form-card shadow-sm">
+
+                <div class="alert alert-success alert-dismissible fade show mb-4" th:if="${param.exit}">
+                    L'agent s'ha donat d'alta correctament.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div class="alert alert-danger alert-dismissible fade show mb-4" th:if="${error}" th:text="${error}">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <form id="formAgent" th:action="@{/dashboard/agents/alta}" th:object="${agent}" method="post" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="esEdicio" th:value="${esEdicio}">
+
+                    <!-- Quadre de resum d'errors (ocult per defecte) -->
+                    <div id="errorSummary" class="alert alert-danger d-none mb-4" role="alert">
+                        <div class="fw-semibold small">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                            Revisa els camps següents abans de desar l'agent:
+                        </div>
+                        <ul id="errorList" class="small mb-0 mt-2"></ul>
+                    </div>
+
+                    <!-- 1. Dades personals i d'accés -->
+                    <div class="section-title">1. Dades personals i d'accés</div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="nom">Nom complet *</label>
+                            <input type="text" id="nom" th:field="*{nom}" th:errorclass="is-invalid" class="form-control" placeholder="Ex: Joan Garcia i Soler" minlength="2" maxlength="50" required>
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dni">Número d'identificació (DNI / NIE) *</label>
+                            <input type="text" id="dni" th:field="*{dni}" th:errorclass="is-invalid" th:readonly="${esEdicio}" class="form-control" placeholder="Ex: 12345678Z" maxlength="9" required
+                                   oninput="this.value = this.value.toUpperCase()">
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('dni')}" th:errors="*{dni}"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="email">Adreça electrònica corporativa *</label>
+                            <input type="email" id="email" th:field="*{email}" th:errorclass="is-invalid" class="form-control" placeholder="Ex: empleat@nothingan.com" required>
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password">Contrasenya d'accés *</label>
+                            <input type="password" id="password" th:field="*{password}" th:errorclass="is-invalid" class="form-control" placeholder="Mínim 8 caràcters" minlength="8" th:required="${!esEdicio}">
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="dataNaixement">Data de naixement *</label>
+                            <input type="date" id="dataNaixement" th:field="*{dataNaixement}" th:errorclass="is-invalid"
+                                   th:max="${#temporals.format(#temporals.createToday().minusYears(18), 'yyyy-MM-dd')}"
+                                   class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('dataNaixement')}" th:errors="*{dataNaixement}"></span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Fotografia de perfil -->
+                    <div class="section-title">2. Fotografia de perfil</div>
+                    <div class="mb-3">
+                        <label for="fitxerFoto" class="form-label">Selecciona la foto de l'agent (PNG,JPG o GIF) *</label>
+                        <input type="file" id="fitxerFoto" name="fitxerFoto" class="form-control" accept="image/png, image/jpeg">
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <!-- 3. Dades laborals i permisos -->
+                    <div class="section-title">3. Dades laborals i permisos</div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="hora_entrada">Hora d'entrada prevista *</label>
+                            <input type="time" id="hora_entrada" th:field="*{hora_entrada}" th:errorclass="is-invalid" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('hora_entrada')}" th:errors="*{hora_entrada}"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hora_sortida">Hora de sortida prevista *</label>
+                            <input type="time" id="hora_sortida" th:field="*{hora_sortida}" th:errorclass="is-invalid" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                            <span class="text-danger small" th:if="${#fields.hasErrors('hora_sortida')}" th:errors="*{hora_sortida}"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="rol">Rol al sistema *</label>
+                        <select id="rol" th:field="*{rol}" th:errorclass="is-invalid" class="form-select" required>
+                            <option value="">-- Selecciona un rol --</option>
+                            <option value="AGENT">Agent (Gestió de clients i vehicles)</option>
+                            <option value="ADMIN">Administrador (Accés total)</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                        <span class="text-danger small" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}"></span>
+                    </div>
+
+                    <div class="alert alert-warning small mb-4">
+                        <i class="fa-solid fa-circle-info me-1"></i> Assegureu-vos de proporcionar credencials segures a l'empleat i assignar el rol correcte.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary fw-semibold px-4 py-2">Desar Agent</button>
+                </form>
+            </div>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Validació del formulari (mateix estil que l'alta de vehicles) -->
+        <script th:inline="none">
+            (function () {
+                var form = document.getElementById('formAgent');
+                var summary = document.getElementById('errorSummary');
+                var list = document.getElementById('errorList');
+                var attempted = false;
+
+                // En mode edició la contrasenya és opcional (només es valida si s'escriu)
+                var esEdicio = form.querySelector('input[name="esEdicio"]').value === 'true';
+
+                // Regles per camp: id -> { required, optional(), test(valor, input), formatMsg }
+                var rules = {
+                    nom: {
+                        required: 'El nom complet és obligatori',
+                        test: function (v) { return v.length >= 2; },
+                        formatMsg: 'El nom ha de tenir mínim 2 caràcters'
+                    },
+                    dni: {
+                        required: "El número d'identificació és obligatori",
+                        test: function (v) { return /^[A-Z0-9]{9}$/i.test(v); },
+                        formatMsg: 'Format de DNI / NIE invàlid (Ex: 12345678Z)'
+                    },
+                    email: {
+                        required: "L'adreça electrònica és obligatòria",
+                        test: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); },
+                        formatMsg: "Format d'adreça electrònica invàlid (Ex: empleat@nothingan.com)"
+                    },
+                    password: {
+                        required: 'La contrasenya és obligatòria',
+                        optional: function () { return esEdicio; },
+                        test: function (v) { return v.length >= 8; },
+                        formatMsg: 'La contrasenya ha de tenir mínim 8 caràcters'
+                    },
+                    dataNaixement: {
+                        required: 'La data de naixement és obligatòria',
+                        test: function (v, input) { return !input.max || v <= input.max; },
+                        formatMsg: "L'agent ha de ser major d'edat (mínim 18 anys)"
+                    },
+                    hora_entrada: {
+                        required: "L'hora d'entrada és obligatòria"
+                    },
+                    hora_sortida: {
+                        required: "L'hora de sortida és obligatòria"
+                    },
+                    rol: {
+                        required: 'Selecciona un rol'
+                    }
+                };
+
+                function getValue(input) {
+                    if (input.type === 'file') {
+                        return input.files && input.files.length ? 'ok' : '';
+                    }
+                    return (input.value || '').trim();
+                }
+
+                function runValidation() {
+                    var errors = [];
+
+                    Object.keys(rules).forEach(function (id) {
+                        var input = document.getElementById(id);
+                        if (!input) return;
+                        var rule = rules[id];
+                        var feedback = input.parentElement.querySelector('.invalid-feedback');
+                        var value = getValue(input);
+                        var msg = '';
+
+                        if (!value) {
+                            if (!(rule.optional && rule.optional())) msg = rule.required;
+                        } else if (rule.test && !rule.test(value, input)) {
+                            msg = rule.formatMsg;
+                        }
+
+                        if (msg) {
+                            input.classList.add('is-invalid');
+                            if (feedback) feedback.textContent = msg;
+                            errors.push(msg);
+                        } else {
+                            input.classList.remove('is-invalid');
+                            if (feedback) feedback.textContent = '';
+                        }
+                    });
+
+                    list.innerHTML = '';
+                    errors.forEach(function (e) {
+                        var li = document.createElement('li');
+                        li.textContent = e;
+                        list.appendChild(li);
+                    });
+                    summary.classList.toggle('d-none', errors.length === 0);
+
+                    return errors.length === 0;
+                }
+
+                form.addEventListener('submit', function (e) {
+                    attempted = true;
+                    if (!runValidation()) {
+                        e.preventDefault();
+                        summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+
+                // Un cop s'ha intentat enviar, revalida en directe mentre l'usuari corregeix
+                function live() {
+                    if (attempted) runValidation();
+                }
+                form.addEventListener('input', live);
+                form.addEventListener('change', live);
+            })();
+        </script>
+    </body>
+</html>

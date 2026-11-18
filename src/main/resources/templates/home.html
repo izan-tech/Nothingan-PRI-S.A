@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ca" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NOTHINGAN PRI S.A. - Lloguer de vehicles a Terrassa</title>
+    
+    <link rel="stylesheet" th:href="@{/index.css}">
+</head>
+<body>
+
+    <!-- Capçalera -->
+    <header>
+        <a th:href="@{/home}" class="marca">
+            <div class="logo">NP</div>
+            <div>
+                <strong>NOTHINGAN PRI S.A.</strong>
+                <small>RENT A CAR · TERRASSA</small>
+            </div>
+        </a>
+        <div class="accions-usuari" style="display: flex; align-items: center; gap: 12px;">
+            <!-- Si l'usuari NO ha iniciat sessió -->
+            <th:block sec:authorize="!isAuthenticated()">
+                <a class="btn" th:href="@{/login}">Iniciar sessió</a>
+                <a class="btn btn-primari" th:href="@{/registre}">Registrar-se</a>
+            </th:block>
+
+            <!-- Agent o Admin -->
+            <th:block sec:authorize="hasAnyRole('ADMIN','AGENT')">
+                <a class="btn" th:href="@{/dashboard}">Dashboard</a>
+
+                <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                    <button type="submit" class="btn btn-primari" style="cursor: pointer;">Tancar sessió</button>
+                </form>
+            </th:block>
+
+            <!-- Client -->
+            <th:block sec:authorize="hasRole('CLIENT')">
+                <a class="btn" th:href="@{/reserves-client}">Les meves reserves</a>
+                
+                <a th:href="@{/perfil}" title="El meu perfil"
+                   style="width: 38px; height: 38px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; text-decoration: none; border: 2px solid #93c5fd;">
+                    <span th:text="${inicialUsuari != null ? inicialUsuari : 'C'}">C</span>
+                </a>
+
+                <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                    <button type="submit" class="btn btn-primari" style="cursor: pointer;">Tancar sessió</button>
+                </form>
+            </th:block>
+        </div>
+    </header>
+
+    <!-- Secció Hero -->
+    <section class="hero">
+        <div class="hero-contingut">
+            <h1>Lloguer de vehicles a Terrassa des de 1988</h1>
+            <p>Empresa familiar compromesa amb la qualitat, la transparència i el tracte proper. Disposem d'una flota modernitzada per cobrir qualsevol necessitat personal o professional.</p>
+            <div class="hero-botons">
+                <a class="btn btn-primari" th:href="@{/cataleg}">Veure catàleg de vehicles</a>
+            </div>
+        </div>
+        <div>
+            <img class="hero-img" src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80" alt="Cotxe al garatge">
+        </div>
+    </section>
+
+    <!-- Per què triar-nos -->
+    <section class="seccio-perque">
+        <h2>Per què triar Nothingan Pri S.A?</h2>
+        <div class="graella-avantatges">
+            <div class="targeta-avantatge">
+                <h3>Vehicles variats</h3>
+                <p>Des de compactes urbans fins a furgonetes de gran capacitat de càrrega.</p>
+            </div>
+            <div class="targeta-avantatge">
+                <h3>Sense Sorpreses</h3>
+                <p>Preus clars, assegurança transparent i sense clàusules ocultes en el contracte.</p>
+            </div>
+            <div class="targeta-avantatge">
+                <h3>Lliurament Ràpid</h3>
+                <p>Tràmits digitalitzats i àgils directament des de la nostra oficina a Terrassa.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Peu de pàgina -->
+    <footer>
+        <div>
+            <h4>NOTHINGAN PRI S.A.</h4>
+            <p>El vostre proveïdor de mobilitat de confiança a Terrassa. Més de tres dècades oferint serveis de lloguer de cotxes i furgonetes a particulars i empreses.</p>
+        </div>
+        <div>
+            <h4>Contacte</h4>
+            <p>Telèfon: +34 93 769 00 00</p>
+            <p>Email: info@nothinganpri.cat</p>
+        </div>
+    </footer>
+
+</body>
+</html>

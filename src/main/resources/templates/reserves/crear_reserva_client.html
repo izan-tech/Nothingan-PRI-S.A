@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Reserva - NOTHINGAN PRI S.A.</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" th:href="@{/cataleg.css}">
+    <link rel="stylesheet" th:href="@{/registre.css}">
+    <link rel="stylesheet" th:href="@{/ressenyes.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header corporatiu -->
+    <header>
+        <a th:href="@{/}" class="marca">
+            <div class="logo">NP</div>
+            <div>
+                <strong>NOTHINGAN PRI S.A.</strong>
+                <small>PORTAL CLIENT</small>
+            </div>
+        </a>
+
+        <div class="nav-header">
+            <a th:href="@{/cataleg}">Catàleg</a>
+            <a th:href="@{/reserves-client}">Les meves reserves</a>
+            
+            <div class="accés-usuaris" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Si l'usuari SÍ ha iniciat sessió -->
+                <th:block sec:authorize="isAuthenticated()">
+                    <a th:href="@{/reserves-client/perfil}" title="Veure usuari">
+                        <i class="fa-solid fa-user"></i> Veure usuari
+                    </a>
+
+                    <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                        <button type="submit" class="btn btn-login" style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-right-from-bracket"></i> Tancar sessió
+                        </button>
+                    </form>
+                </th:block>
+
+                <!-- Si l'usuari NO ha iniciat sessió -->
+                <th:block sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn btn-login">Iniciar sessió</a>
+                    <a th:href="@{/registre}" class="btn btn-login">Registrar-se</a>
+                </th:block>
+            </div>
+        </div>
+    </header>
+
+    <!-- Formulari de Creació de Reserva -->
+    <div class="registre-container" style="max-width: 800px;">
+        <h2>Confirmació i Sol·licitud de Reserva</h2>
+        <p class="registre-subtitol">Comprova el vehicle seleccionat i indica les dates de lloguer desitjades.</p>
+
+        <!-- Avisos de Feedback -->
+        <div th:if="${error}" class="alert-error">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> <span th:text="${error}">Error</span>
+        </div>
+
+        <!-- Targeta Resum del Vehicle Seleccionat -->
+        <div th:if="${vehicleSeleccionat != null}" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; gap: 16px; align-items: center;">
+            <img th:if="${vehicleSeleccionat.foto != null and !vehicleSeleccionat.foto.isBlank()}" 
+                 th:src="@{'/uploads/vehicles/' + ${vehicleSeleccionat.foto}}" alt="Vehicle" style="width: 120px; height: 80px; object-fit: cover; border-radius: 6px;">
+            <img th:unless="${vehicleSeleccionat.foto != null and !vehicleSeleccionat.foto.isBlank()}" 
+                 th:src="@{/images/default-car.png}" alt="Sense imatge" style="width: 120px; height: 80px; object-fit: cover; border-radius: 6px;">
+
+            <div>
+                <span style="font-size: 10px; color: #2563eb; font-weight: 700; text-transform: uppercase;" th:text="${vehicleSeleccionat.tipusVehicle}">TURISME</span>
+                <h3 style="margin: 2px 0 4px; font-size: 16px;" th:text="${vehicleSeleccionat.marca + ' ' + vehicleSeleccionat.model}">Toyota Corolla</h3>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">
+                    Matrícula: <strong th:text="${vehicleSeleccionat.matricula}">1234ABC</strong> | 
+                    Preu: <strong th:text="${#numbers.formatDecimal(vehicleSeleccionat.preuHora, 1, 2) + ' €/h'}">15.00 €/h</strong> | 
+                    Fiança: <strong th:text="${#numbers.formatDecimal(vehicleSeleccionat.fianca, 1, 2) + ' €'}">150.00 €</strong>
+                </p>
+                <p th:if="${esPremium}" style="margin: 6px 0 0; color: #16a34a; font-size: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-crown"></i> Client premium: 25% de descompte en el preu de lloguer.
+                </p>
+            </div>
+        </div>
+
+        <form th:action="@{/reserves-client/guardar}" th:object="${reserva}" method="post" class="form-grid">
+            
+            <!-- Guardem la matrícula del vehicle -->
+            <input type="hidden" name="vehicle.matricula"
+                   th:value="${vehicleSeleccionat != null ? vehicleSeleccionat.matricula : (reserva.vehicle != null ? reserva.vehicle.matricula : '')}">
+
+            <div class="seccio-títol">Període de Recollida i Devolució</div>
+
+            <div class="form-grup">
+                <label>Data d'inici *</label>
+                <input type="date" name="dataInici" required
+                       th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                       th:value="${reserva.dataInici != null ? #temporals.format(reserva.dataInici, 'yyyy-MM-dd') : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+            </div>
+
+            <div class="form-grup">
+                <label>Hora d'inici *</label>
+                <input type="time" name="horaInici" required
+                       th:value="${reserva.horaInici != null ? #temporals.format(reserva.horaInici, 'HH:mm') : '09:00'}">
+            </div>
+
+            <div class="form-grup">
+                <label>Data de devolució *</label>
+                <input type="date" name="dataFi" required
+                       th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                       th:value="${reserva.dataFi != null ? #temporals.format(reserva.dataFi, 'yyyy-MM-dd') : ''}">
+            </div>
+
+            <div class="form-grup">
+                <label>Hora de devolució *</label>
+                <input type="time" name="horaFi" required
+                       th:value="${reserva.horaFi != null ? #temporals.format(reserva.horaFi, 'HH:mm') : '19:00'}">
+            </div>
+
+            <div class="seccio-títol">Observacions addicionals</div>
+
+            <div class="form-grup full-width">
+                <label>Comentaris o necessitats especials</label>
+                <input type="text" name="observacions"
+                       placeholder="Ex: Sella per a nadó, recollida en horari especial..."
+                       th:value="${reserva.observacions}">
+            </div>
+
+            <!-- Resum de cost estimat (s'actualitza en triar les dates) -->
+            <div class="form-grup full-width" th:if="${vehicleSeleccionat != null}"
+                 id="resum-cost"
+                 th:attr="data-preu=${vehicleSeleccionat.preuHora},data-fianca=${vehicleSeleccionat.fianca},data-premium=${esPremium != null and esPremium}"
+                 style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; font-size:13px;">
+                <div style="display:flex; justify-content:space-between;"><span>Durada</span><strong id="r-durada">-</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Lloguer</span><strong id="r-lloguer">-</strong></div>
+                <div id="r-fila-descompte" style="display:none; justify-content:space-between; color:#16a34a;">
+                    <span>Descompte premium (25%)</span><strong id="r-descompte">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #e2e8f0; margin-top:8px; padding-top:8px;">
+                    <span>Total estimat</span><strong id="r-total" style="font-size:15px;">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:#64748b; margin-top:4px;">
+                    <span>Fiança (dipòsit, es retorna)</span><strong id="r-fianca">-</strong>
+                </div>
+            </div>
+
+            <!-- Confirmació de documentació (obligatòria) -->
+            <div class="form-grup full-width"
+                 style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:14px;">
+                <label for="confirmaDocumentacio"
+                       style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:13px; line-height:1.5; margin:0;">
+                    <input type="checkbox" id="confirmaDocumentacio" name="confirmaDocumentacio" value="true" required
+                           style="margin-top:3px; width:16px; height:16px; flex-shrink:0; cursor:pointer;">
+                    <span>
+                        El client confirma haver entès correctament que, en el moment de llogar el vehicle,
+                        l'agent pot demanar-li la documentació pertinent (carnet d'identitat, llicència de conduir, etc.). *
+                    </span>
+                </label>
+            </div>
+
+            <div class="form-grup full-width" style="margin-top: 16px; display: flex; gap: 12px;">
+                <a th:href="@{/cataleg}" class="btn" style="background: #f1f5f9; color: #475569; text-align: center; border: 1px solid #cbd5e1; flex: 1; padding: 12px; border-radius: 6px; font-weight: 600;">
+                    Cancel·lar
+                </a>
+                <button type="submit" class="btn-enviar-registre" style="flex: 2;">
+                    Confirmar i Sol·licitar Reserva
+                </button>
+            </div>
+        </form>
+
+        <!-- ===================== RESSENYES ===================== -->
+        <div th:if="${vehicleSeleccionat != null}" class="ressenyes-seccio">
+            <h3>Ressenyes d'aquest vehicle</h3>
+
+            <div th:if="${succes}" class="ressenya-succes">
+                <span th:text="${succes}"></span>
+            </div>
+
+            <p class="ressenya-buida" th:if="${resenyes == null or #lists.isEmpty(resenyes)}">Encara no hi ha ressenyes.</p>
+
+            <div th:each="r : ${resenyes}" class="ressenya-item">
+                <div class="ressenya-cap">
+                    <strong th:text="${r.client.nom}">Client</strong>
+                    <span class="ressenya-data" th:text="${#temporals.format(r.dataCreacio, 'dd/MM/yyyy')}">01/01/2026</span>
+                </div>
+                <div class="ressenya-estrelles">
+                    <i th:each="i : ${#numbers.sequence(1, 5)}"
+                       th:class="${i <= r.puntuacio} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                </div>
+                <p class="ressenya-text" th:if="${r.comentari != null}" th:text="${r.comentari}"></p>
+            </div>
+        </div>
+    </div>
+
+<script>
+(function () {
+    const box = document.getElementById('resum-cost');
+    if (!box) return;
+
+    const preu = parseFloat(box.dataset.preu);
+    const fianca = parseFloat(box.dataset.fianca);
+    const premium = box.dataset.premium === 'true';
+    const f = document.querySelector('form.form-grid');
+    const camps = ['dataInici', 'horaInici', 'dataFi', 'horaFi']
+        .map(n => f.querySelector('[name="' + n + '"]'));
+    const eur = n => n.toFixed(2).replace('.', ',') + ' €';
+
+    function calcula() {
+        const [di, hi, df, hf] = camps.map(c => c.value);
+        document.getElementById('r-fianca').textContent = eur(fianca);
+        if (!di || !hi || !df || !hf) return;
+
+        const ini = new Date(di + 'T' + hi);
+        const fi = new Date(df + 'T' + hf);
+        const minuts = (fi - ini) / 60000;
+        if (!(minuts > 0)) {
+            document.getElementById('r-durada').textContent = 'Dates no vàlides';
+            document.getElementById('r-lloguer').textContent = '-';
+            document.getElementById('r-total').textContent = '-';
+            return;
+        }
+        // Mateixa lògica que el servidor: hores arrodonides amunt
+        const hores = Math.ceil(minuts / 60);
+        const dies = Math.ceil(hores / 24);
+        const lloguer = preu * hores;
+        const descompte = premium ? lloguer * 0.25 : 0;
+
+        document.getElementById('r-durada').textContent = dies + ' dia(es) · ' + hores + ' h';
+        document.getElementById('r-lloguer').textContent = eur(lloguer);
+        document.getElementById('r-fila-descompte').style.display = premium ? 'flex' : 'none';
+        document.getElementById('r-descompte').textContent = '-' + eur(descompte);
+        document.getElementById('r-total').textContent = eur(lloguer - descompte);
+    }
+
+    camps.forEach(c => c.addEventListener('input', calcula));
+    calcula();
+})();
+</script>
+
+</body>
+</html>

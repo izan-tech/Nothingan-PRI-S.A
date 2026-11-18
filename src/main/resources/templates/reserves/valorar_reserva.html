@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Valorar vehicle - NOTHINGAN PRI S.A.</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/cataleg.css}">
+        <link rel="stylesheet" th:href="@{/reservesClient.css}">
+    </head>
+    <body>
+
+        <header>
+            <a th:href="@{/}" class="marca">
+                <div class="logo">NP</div>
+                <div>
+                    <strong>NOTHINGAN PRI S.A.</strong>
+                    <small>PORTAL CLIENT</small>
+                </div>
+            </a>
+            <div class="nav-header">
+                <a th:href="@{/cataleg}">Catàleg</a>
+                <a th:href="@{/reserves-client}" class="active">Les meves reserves</a>
+                <div class="accés-usuaris">
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-login">
+                            <i class="fa-solid fa-right-from-bracket"></i> Tancar sessió
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main class="reserves-container">
+
+            <div class="reserves-cap">
+                <h2>Fitxa del vehicle</h2>
+                <p>Especificacions del vehicle i ressenyes dels clients.</p>
+            </div>
+
+            <div th:if="${error}" class="alert-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
+            </div>
+            <div th:if="${succes}" class="alert-success">
+                <i class="fa-solid fa-circle-check"></i> <span th:text="${succes}"></span>
+            </div>
+
+            <!-- Dades del vehicle -->
+            <div class="card-detall">
+                <img th:if="${vehicle.foto != null and !vehicle.foto.isBlank()}"
+                     th:src="@{'/uploads/vehicles/' + ${vehicle.foto}}" alt="Foto vehicle">
+                <img th:unless="${vehicle.foto != null and !vehicle.foto.isBlank()}"
+                     th:src="@{/images/default-car.png}" alt="Sense imatge">
+
+                <div class="detall-dades">
+                    <h3 th:text="${vehicle.marca + ' ' + vehicle.model}"></h3>
+                    <dl>
+                        <dt>Matrícula</dt>
+                        <dd th:text="${vehicle.matricula}"></dd>
+
+                        <dt>Tipus / Categoria</dt>
+                        <dd th:text="${vehicle.tipusVehicle}"></dd>
+
+                        <dt>Any de matriculació</dt>
+                        <dd th:text="${vehicle.anyMatriculacio}"></dd>
+
+                        <dt>Preu per hora</dt>
+                        <dd th:text="${#numbers.formatDecimal(vehicle.preuHora, 1, 2) + ' €/h'}"></dd>
+
+                        <dt>Fiança</dt>
+                        <dd th:text="${#numbers.formatDecimal(vehicle.fianca, 1, 2) + ' €'}"></dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Ressenyes -->
+            <div class="card-detall card-resenyes">
+                <div class="resenyes-contingut">
+                    <h3>Ressenyes</h3>
+
+                    <!-- Formulari: només si el client encara no ha valorat aquest vehicle -->
+                    <form th:unless="${jaValorat}"
+                          th:action="@{'/reserves-client/vehicle/' + ${vehicle.matricula} + '/resenyes'}"
+                          method="post" class="form-resenya">
+                        <input type="hidden" name="codiReserva" th:value="${reserva.codiReserva}">
+
+                        <div class="rating">
+                            <input type="radio" id="star5" name="puntuacio" value="5" required><label for="star5" title="5 estrelles"><i class="fa-solid fa-star"></i></label>
+                            <input type="radio" id="star4" name="puntuacio" value="4"><label for="star4" title="4 estrelles"><i class="fa-solid fa-star"></i></label>
+                            <input type="radio" id="star3" name="puntuacio" value="3"><label for="star3" title="3 estrelles"><i class="fa-solid fa-star"></i></label>
+                            <input type="radio" id="star2" name="puntuacio" value="2"><label for="star2" title="2 estrelles"><i class="fa-solid fa-star"></i></label>
+                            <input type="radio" id="star1" name="puntuacio" value="1"><label for="star1" title="1 estrella"><i class="fa-solid fa-star"></i></label>
+                        </div>
+
+                        <textarea name="comentari" rows="3" maxlength="500"
+                                  placeholder="Comentari (opcional)"></textarea>
+
+                        <button type="submit" class="btn-enviar">
+                            <i class="fa-solid fa-plus"></i> Afegir ressenya
+                        </button>
+                    </form>
+
+                    <p th:if="${jaValorat}" class="sense-resenyes">
+                        <i class="fa-solid fa-circle-check"></i> Ja has valorat aquest vehicle. Gràcies!
+                    </p>
+
+                    <!-- Llista -->
+                    <p class="sense-resenyes" th:if="${resenyes == null or #lists.isEmpty(resenyes)}">
+                        Encara no hi ha ressenyes.
+                    </p>
+
+                    <div th:each="r : ${resenyes}" class="resenya-item">
+                        <div class="resenya-cap">
+                            <strong th:text="${r.client.nom}">Client</strong>
+                            <span th:text="${#temporals.format(r.dataCreacio, 'dd/MM/yyyy')}">01/01/2026</span>
+
+                            <form th:if="${r.client.dni == dniClient}"
+                                  th:action="@{'/reserves-client/vehicle/' + ${vehicle.matricula} + '/resenyes/' + ${r.idRessenya} + '/eliminar'}"
+                                  method="post" class="form-eliminar"
+                                  onsubmit="return confirm('Vols eliminar la teva ressenya?');">
+                                <input type="hidden" name="codiReserva" th:value="${reserva.codiReserva}">
+                                <button type="submit" class="btn-eliminar-resenya">
+                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
+                        <div class="resenya-estrelles">
+                            <i th:each="i : ${#numbers.sequence(1, 5)}"
+                               th:class="${i <= r.puntuacio} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                        </div>
+                        <p th:if="${r.comentari != null}" th:text="${r.comentari}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <p><a th:href="@{/cataleg}" class="btn-tornar">
+                    <i class="fa-solid fa-arrow-left"></i> Tornar al catàleg</a></p>
+
+        </main>
+    </body>
+</html>

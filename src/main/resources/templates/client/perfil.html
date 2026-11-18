@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El meu Perfil - NOTHINGAN PRI S.A.</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/cataleg.css}">
+    <link rel="stylesheet" th:href="@{/registre.css}">
+</head>
+<body>
+
+    <!-- Header corporatiu -->
+    <header>
+        <a th:href="@{/}" class="marca">
+            <div class="logo">NP</div>
+            <div>
+                <strong>NOTHINGAN PRI S.A.</strong>
+                <small>PORTAL CLIENT</small>
+            </div>
+        </a>
+
+        <div class="nav-header">
+            <a th:href="@{/cataleg}">Catàleg</a>
+            <a th:href="@{/reserves-client}">Les meves reserves</a>
+
+            <div class="accés-usuaris" style="display: flex; align-items: center; gap: 12px;">
+                <a th:href="@{/perfil}" title="El meu perfil"
+                   style="width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; text-decoration: none; border: 2px solid #93c5fd;">
+                    <span th:text="${inicialUsuari != null ? inicialUsuari : 'C'}">C</span>
+                </a>
+
+                <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                    <button type="submit" class="btn btn-login" style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Tancar sessió
+                    </button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contingut Principal -->
+    <div class="registre-container" style="max-width: 850px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div>
+                <h2 style="margin-bottom: 4px;">El meu Perfil</h2>
+                <p class="registre-subtitol" style="margin: 0;">Consulta i modifica les teves dades personals i de conducció.</p>
+            </div>
+
+            <!-- Badges informatius (Només lectura) -->
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span th:if="${client.estatValidacio == 'VALIDAT'}"
+                      style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-check"></i> VALIDAT
+                </span>
+                <span th:if="${client.estatValidacio == 'PENDENT' or client.estatValidacio == null}"
+                      style="background: #fef9c3; color: #854d0e; border: 1px solid #fde047; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+                    <i class="fa-solid fa-clock"></i> PENDENT DE VALIDACIÓ
+                </span>
+                <span th:if="${client.estatValidacio == 'REBUTJAT'}"
+                      style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-xmark"></i> REBUTJAT
+                </span>
+
+                <span th:if="${client.premium}"
+                      style="background: #2563eb; color: #fff; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+                    <i class="fa-solid fa-crown"></i> CLIENT PREMIUM
+                </span>
+                <span th:unless="${client.premium}"
+                      style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;">
+                    COMPTE ESTÀNDARD
+                </span>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div th:if="${missatge}" style="padding: 12px 16px; border-radius: 8px; background: #dcfce7; color: #166534; margin-bottom: 18px; font-weight: 500;">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${missatge}"></span>
+        </div>
+        <div th:if="${error}" class="alert-error" style="margin-bottom: 18px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
+        </div>
+
+        <form th:action="@{/perfil}" th:object="${client}" method="post" class="form-grid">
+            
+            <div class="seccio-títol">Dades Personals i Identificació</div>
+
+            <div class="form-grup">
+                <label>Nom complet *</label>
+                <input type="text" th:field="*{nom}" required minlength="2" maxlength="50">
+            </div>
+
+            <div class="form-grup">
+                <label>Número d'identificació (DNI / NIE) <small style="color: #64748b;">(No editable)</small></label>
+                <input type="text" th:value="${client.dni}" readonly disabled style="background-color: #e2e8f0; color: #475569; cursor: not-allowed;">
+            </div>
+
+            <div class="form-grup">
+                <label>Data de naixement *</label>
+                <input type="date" th:field="*{dataNaixement}" required>
+            </div>
+
+            <div class="form-grup">
+                <label>Data de caducitat del DNI *</label>
+                <input type="date" th:field="*{dataCaducitatDNI}" required>
+            </div>
+
+            <div class="seccio-títol">Contacte i Domicili</div>
+
+            <div class="form-grup">
+                <label>Adreça electrònica *</label>
+                <input type="email" th:field="*{email}" required>
+            </div>
+
+            <div class="form-grup">
+                <label>Telèfon *</label>
+                <input type="tel" th:field="*{telefon}" required
+                       maxlength="9" minlength="9" inputmode="numeric"
+                       pattern="[0-9]{9}"
+                       title="Introdueix exactament 9 xifres, sense espais ni lletres"
+                       placeholder="Ex: 612345678"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+
+            <div class="form-grup">
+                <label>Adreça *</label>
+                <input type="text" th:field="*{adreca}" required>
+            </div>
+
+            <div class="form-grup">
+                <label>Nacionalitat *</label>
+                <input type="text" th:field="*{nacionalitat}" required>
+            </div>
+
+            <div class="seccio-títol">Llicència de Conducció</div>
+
+            <div class="form-grup">
+                <label>Tipus de llicència *</label>
+                <input type="text" th:field="*{tipusLlicencia}" required>
+            </div>
+
+            <div class="seccio-títol">Targeta de crèdit</div>
+
+            <div class="form-grup full-width">
+                <p th:if="${client.targetaUltims4 != null}"
+                   th:text="|Targeta actual acabada en ${client.targetaUltims4} · Caduca ${client.targetaCaducitat}|">
+                    Targeta actual
+                </p>
+                <p th:if="${client.targetaUltims4 == null}">
+                    No tens cap targeta desada.
+                </p>
+                <small>Per canviar-la, introdueix les dades de la nova targeta. Només se'n desaran els quatre últims dígits i la caducitat.</small>
+            </div>
+
+            <div class="form-grup">
+                <label for="numTargeta">Número de la nova targeta</label>
+                <input type="text" id="numTargeta" th:field="*{numTargeta}"
+                       inputmode="numeric" autocomplete="off" maxlength="23"
+                       placeholder="Introdueix el número complet">
+            </div>
+
+            <div class="form-grup">
+                <label for="novaCaducitatTargeta">Caducitat de la nova targeta</label>
+                <input type="month" id="novaCaducitatTargeta" th:field="*{novaCaducitatTargeta}">
+            </div>
+
+            <div class="seccio-títol">Seguretat</div>
+
+            <div class="form-grup">
+                <label>Nova contrasenya <small style="color: #64748b;">(Deixar en blanc per mantenir l'actual)</small></label>
+                <input type="password" name="password" placeholder="Mínim 8 caràcters"
+                       minlength="8" autocomplete="new-password">
+            </div>
+
+            <div class="form-grup full-width" style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+                <a th:href="@{/cataleg}" class="btn" style="background: #f1f5f9; color: #475569; text-align: center; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                    Tornar
+                </a>
+                <button type="submit" class="btn-enviar-registre" style="width: auto; padding: 12px 28px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Desar canvis
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

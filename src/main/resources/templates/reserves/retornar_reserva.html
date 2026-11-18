@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Retorn de Vehicle - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat i Dashboard -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+        <link rel="stylesheet" th:href="@{/dashboard.css}">
+    </head>
+    <body class="bg-light">
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content p-4">
+
+            <!-- Capçalera -->
+            <div class="mb-4">
+                <h1 class="h2 fw-bold text-dark">Retorn de vehicle</h1>
+                <p class="text-secondary">Registre de data i hora de tornada, comprovació fotogràfica, càlcul de retard/danys i liquidació de la fiança.</p>
+            </div>
+
+            <form th:action="@{'/dashboard/reserves/' + ${reserva.codiReserva} + '/retornar'}" method="post" enctype="multipart/form-data">
+
+                <!-- Targeta d'Informació de la Reserva -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-3">
+                        <div>
+                            <span class="text-secondary extra-small d-block text-uppercase fw-semibold">CODI RESERVA</span>
+                            <strong class="text-primary fs-5" th:text="${'RES-' + reserva.codiReserva}">RES-0000</strong>
+                        </div>
+                        <div>
+                            <span class="text-secondary extra-small d-block text-uppercase fw-semibold">CLIENT</span>
+                            <strong class="text-dark" th:text="${reserva.client != null ? reserva.client.nom : '---'}">---</strong>
+                        </div>
+                        <div>
+                            <span class="text-secondary extra-small d-block text-uppercase fw-semibold">VEHICLE</span>
+                            <strong class="text-dark" th:text="${reserva.vehicle != null ? (reserva.vehicle.marca + ' ' + reserva.vehicle.model) : '---'}">---</strong>
+                        </div>
+                        <div>
+                            <span class="text-secondary extra-small d-block text-uppercase fw-semibold">MATRÍCULA</span>
+                            <strong class="text-dark" th:text="${reserva.vehicle != null ? reserva.vehicle.matricula : '---'}">---</strong>
+                        </div>
+                        <div>
+                            <span class="text-secondary extra-small d-block text-uppercase fw-semibold">PERÍODE PREVIST</span>
+                            <strong class="text-dark" th:text="${reserva.dataInici != null ? (#temporals.format(reserva.dataInici, 'dd/MM/yyyy') + ' - ' + #temporals.format(reserva.dataFi, 'dd/MM/yyyy')) : '---'}">---</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Columna Esquerra: Data/Hora, Checklists, Lectures i Fotos Addicionals -->
+                    <div class="col-lg-7">
+
+                        <!-- Data i Hora de Retorn (G3P1-238) -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="h5 fw-bold text-dark mb-0">
+                                    <i class="fa-regular fa-clock me-2 text-primary" aria-hidden="true"></i>Data i hora de retorn
+                                </h2>
+                                <span class="badge bg-light text-dark border" th:if="${reserva.dataFi != null}">
+                                    Previst: <span th:text="${#temporals.format(reserva.dataFi, 'dd/MM/yyyy') + ' ' + reserva.horaFi}"></span>
+                                </span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="dataRetorn" class="form-label small text-dark fw-semibold">Data de retorn *</label>
+                                    <input type="date" id="dataRetorn" name="dataRetorn" class="form-control"
+                                           th:value="${dataAvui != null ? dataAvui : #temporals.createToday()}"
+                                           onchange="recalcularResum()" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="horaRetorn" class="form-label small text-dark fw-semibold">Hora de retorn *</label>
+                                    <input type="time" id="horaRetorn" name="horaRetorn" class="form-control"
+                                           th:value="${horaAvui != null ? horaAvui : #temporals.format(#temporals.createNow(), 'HH:mm')}"
+                                           onchange="recalcularResum()" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="kmRetorn" class="form-label small text-dark fw-semibold">Odòmetre retorn (km)</label>
+                                    <input type="number" id="kmRetorn" name="kmRetorn" class="form-control" placeholder="Ex: 15120">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checklist -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <h2 class="h5 fw-bold text-dark mb-3">Checklist d'estat de retorn</h2>
+
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="cRet1" name="teDesperfectes" onchange="onToggleDesperfectes()">
+                                <label class="form-check-label fw-semibold" for="cRet1">Presenta nous danys o desperfectes visibles</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" checked id="cRet2">
+                                <label class="form-check-label fw-semibold" for="cRet2">Interior aspirat i lliure de brossa o olors</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" checked id="cRet3">
+                                <label class="form-check-label fw-semibold" for="cRet3">Dipòsit de combustible retornat complet (100%)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" checked id="cRet4">
+                                <label class="form-check-label fw-semibold" for="cRet4">Llums davanters, posteriors i electrònica en funcionament</label>
+                            </div>
+                        </div>
+
+                        <!-- Lectures i incidències -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="h5 fw-bold text-dark mb-0">Lectures i incidències del retorn</h2>
+                                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-semibold">Registre de Danys</span>
+                            </div>
+
+                            <!-- Fila 1: Combustible (%) i Deducció carburant (€) -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="nivellCombustibleRetorn" class="form-label small text-dark fw-semibold">Nivell de combustible de retorn (%) *</label>
+                                    <input type="text" id="nivellCombustibleRetorn" name="nivellCombustible" class="form-control" placeholder="100% (Ple)" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="deduccioCarburant" class="form-label small text-dark fw-semibold">Deducció per manca de carburant (€)</label>
+                                    <input type="number" step="0.01" id="deduccioCarburant" name="deduccioCarburant" class="form-control" placeholder="0.00" onchange="recalcularResum()" onkeyup="recalcularResum()">
+                                </div>
+                            </div>
+
+                            <!-- Fila 2: Gravetat del dany i Imputable al client? -->
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="gravetatDany" class="form-label small text-dark fw-semibold">Gravetat del dany</label>
+                                    <select id="gravetatDany" name="gravetat" class="form-select" onchange="recalcularResum()">
+                                        <option value="0" selected>Sense danys (0 €)</option>
+                                        <option value="75">Lleu (petit ratllat lateral)</option>
+                                        <option value="150">Moderat (cop superficial)</option>
+                                        <option value="300">Greu (dany estructural)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="imputableClient" class="form-label small text-dark fw-semibold">Imputable al client?</label>
+                                    <select id="imputableClient" name="desperfectesImputables" class="form-select" onchange="recalcularResum()">
+                                        <option value="true" selected>Sí (Es reté tota la fiança)</option>
+                                        <option value="false">No (Responsabilitat empresa/tercers)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fotos Addicionals Il·limitades amb Títol i Descripció -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                <h2 class="h5 fw-bold text-dark mb-0">
+                                    <i class="fa-solid fa-images me-2 text-primary" aria-hidden="true"></i>Fotos addicionals (detall de danys / estat)
+                                </h2>
+                                <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" onclick="afegirFotoAddicional()">
+                                    <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Afegir foto
+                                </button>
+                            </div>
+                            <p class="text-secondary small mb-3">Afegeix tantes fotografies extra com calgui indicant què es veu a la imatge i una descripció.</p>
+
+                            <div id="llistaFotosAddicionals" class="d-flex flex-column gap-3">
+                                <div id="missatgeSenseFotosAddicionals" class="text-secondary small fst-italic border rounded p-3 bg-light text-center">
+                                    Encara no has afegit cap fotografia addicional. Fes clic a <strong>"+ Afegir foto"</strong> per documentar un dany o detall.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observacions -->
+                        <div class="card border-0 shadow-sm p-4">
+                            <label for="observacionsRetorn" class="h5 fw-bold text-dark mb-3 d-block">Observacions / Comentaris de l'estat del vehicle</label>
+                            <textarea id="observacionsRetorn" name="observacions" class="form-control" rows="3" placeholder="Descriviu les incidències generals detectades en la devolució..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Columna Dreta: Fotos Lliurament, Fotos Retorn (4 Costats) i Resum Econòmic -->
+                    <div class="col-lg-5">
+
+                        <!-- Fotos del moment de lliurar el vehicle (G3P1-239) -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h2 class="h5 fw-bold text-dark mb-0">
+                                    <i class="fa-solid fa-camera-retro me-2 text-primary" aria-hidden="true"></i>Fotos del lliurament
+                                </h2>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Estat inicial</span>
+                            </div>
+                            <p class="text-secondary small mb-3">Consulta les fotografies fetes en lliurar el vehicle per comparar possibles danys.</p>
+
+                            <div id="rawObservacionsLliurament" th:text="${reserva.observacions != null ? reserva.observacions : ''}" style="display: none;"></div>
+                            <div id="galeriaFotosLliurament" class="row row-cols-2 g-2">
+                                <div class="col-12 text-secondary small fst-italic">No hi ha fotografies enregistrades del lliurament.</div>
+                            </div>
+                        </div>
+
+                        <!-- Fotos estat del vehicle en el retorn (4 Costats) -->
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <h2 class="h5 fw-bold text-dark mb-2">Fotos del retorn (4 Costats)</h2>
+                            <p class="text-secondary small mb-3">Fes clic a qualsevol requadre per pujar la imatge corresponent.</p>
+
+                            <div class="row g-2">
+                                <!-- 1. Frontal -->
+                                <div class="col-6">
+                                    <label for="fotoRetornFrontal" class="border rounded p-3 text-center bg-light text-secondary position-relative overflow-hidden d-block w-100"
+                                           style="border-style: dashed !important; cursor: pointer; min-height: 110px;">
+                                        <input type="file" id="fotoRetornFrontal" name="fotos" accept="image/*" class="visually-hidden" onchange="previewFotoAuto(this)">
+                                        <div class="ph-content">
+                                            <i class="fa-regular fa-image fs-3 mb-1 d-block" aria-hidden="true"></i>
+                                            <span class="d-block extra-small fw-bold">Frontal</span>
+                                        </div>
+                                        <img class="img-preview d-none w-100 h-100 position-absolute top-0 start-0 rounded" style="object-fit: cover;" alt="Previsualització foto frontal retorn">
+                                    </label>
+                                </div>
+                                <!-- 2. Posterior -->
+                                <div class="col-6">
+                                    <label for="fotoRetornPosterior" class="border rounded p-3 text-center bg-light text-secondary position-relative overflow-hidden d-block w-100"
+                                           style="border-style: dashed !important; cursor: pointer; min-height: 110px;">
+                                        <input type="file" id="fotoRetornPosterior" name="fotos" accept="image/*" class="visually-hidden" onchange="previewFotoAuto(this)">
+                                        <div class="ph-content">
+                                            <i class="fa-regular fa-image fs-3 mb-1 d-block" aria-hidden="true"></i>
+                                            <span class="d-block extra-small fw-bold">Posterior</span>
+                                        </div>
+                                        <img class="img-preview d-none w-100 h-100 position-absolute top-0 start-0 rounded" style="object-fit: cover;" alt="Previsualització foto posterior retorn">
+                                    </label>
+                                </div>
+                                <!-- 3. Lateral Esquerre -->
+                                <div class="col-6">
+                                    <label for="fotoRetornEsquerre" class="border rounded p-3 text-center bg-light text-secondary position-relative overflow-hidden d-block w-100"
+                                           style="border-style: dashed !important; cursor: pointer; min-height: 110px;">
+                                        <input type="file" id="fotoRetornEsquerre" name="fotos" accept="image/*" class="visually-hidden" onchange="previewFotoAuto(this)">
+                                        <div class="ph-content">
+                                            <i class="fa-regular fa-image fs-3 mb-1 d-block" aria-hidden="true"></i>
+                                            <span class="d-block extra-small fw-bold">Lateral Esquerre</span>
+                                        </div>
+                                        <img class="img-preview d-none w-100 h-100 position-absolute top-0 start-0 rounded" style="object-fit: cover;" alt="Previsualització foto lateral esquerre retorn">
+                                    </label>
+                                </div>
+                                <!-- 4. Lateral Dret -->
+                                <div class="col-6">
+                                    <label for="fotoRetornDret" class="border rounded p-3 text-center bg-light text-secondary position-relative overflow-hidden d-block w-100"
+                                           style="border-style: dashed !important; cursor: pointer; min-height: 110px;">
+                                        <input type="file" id="fotoRetornDret" name="fotos" accept="image/*" class="visually-hidden" onchange="previewFotoAuto(this)">
+                                        <div class="ph-content">
+                                            <i class="fa-regular fa-image fs-3 mb-1 d-block" aria-hidden="true"></i>
+                                            <span class="d-block extra-small fw-bold">Lateral Dret</span>
+                                        </div>
+                                        <img class="img-preview d-none w-100 h-100 position-absolute top-0 start-0 rounded" style="object-fit: cover;" alt="Previsualització foto lateral dret retorn">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resum econòmic i devolució -->
+                        <div class="card border-0 shadow-sm p-4" id="resumEconimicCard"
+                             th:data-fianca="${reserva.fianca != null ? reserva.fianca : 300}"
+                             th:data-data-fi="${reserva.dataFi}"
+                             th:data-hora-fi="${reserva.horaFi}"
+                             th:data-preu-hora="${reserva.vehicle != null && reserva.vehicle.preuHora != null ? reserva.vehicle.preuHora : 0}">
+                            <h2 class="h5 fw-bold text-dark mb-3">Resum econòmic i devolució</h2>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">Fiança dipositada</span>
+                                <span class="fw-bold text-dark" th:text="${reserva.fianca != null ? (reserva.fianca + ' €') : '300,00 €'}">300,00 €</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-warning-emphasis">Penalització per retard (<span id="horesRetardText">0</span>h)</span>
+                                <span id="deduccioRetardText" class="fw-bold text-warning-emphasis">0,00 €</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-danger">Deduccions per danys</span>
+                                <span id="deduccioText" class="fw-bold text-danger">0,00 €</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                                <span class="text-secondary">Deduccions per carburant</span>
+                                <span id="deduccioCarburantText" class="fw-bold text-dark">0,00 €</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-4">
+                                <strong class="text-primary fs-5">Import a retornar</strong>
+                                <strong id="importRetornarText" class="text-primary fs-5" th:text="${reserva.fianca != null ? (reserva.fianca + ' €') : '300,00 €'}">300,00 €</strong>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                Confirmar retorn i tancar contracte
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            let comptadorAddicionals = 0;
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const rawContainer = document.getElementById('rawObservacionsLliurament');
+                const galeria = document.getElementById('galeriaFotosLliurament');
+                if (rawContainer && galeria) {
+                    const rawText = rawContainer.innerText.trim();
+                    const urlRegex = /(\/uploads\/vehicles\/[^\s]+?\/lliurar\/[^\s]+?\.(?:jpg|jpeg|png|webp))/gi;
+                    const fotosLliurament = rawText.match(urlRegex) || [];
+
+                    if (fotosLliurament.length > 0) {
+                        galeria.innerHTML = "";
+                        fotosLliurament.forEach(fotoUrl => {
+                            let nomCostat = "Fotografia lliurament";
+                            const urlLower = fotoUrl.toLowerCase();
+
+                            if (urlLower.includes("frontal"))
+                                nomCostat = "Frontal";
+                            else if (urlLower.includes("posterior"))
+                                nomCostat = "Posterior";
+                            else if (urlLower.includes("lateral_esquerre"))
+                                nomCostat = "Lateral Esquerre";
+                            else if (urlLower.includes("lateral_dret"))
+                                nomCostat = "Lateral Dret";
+
+                            const col = document.createElement('div');
+                            col.className = "col text-center";
+                            col.innerHTML = `
+                                <div class="card h-100 border shadow-sm p-1 bg-white">
+                                    <span class="badge bg-dark text-white mb-1 py-1 extra-small">${nomCostat}</span>
+                                    <a href="${fotoUrl}" target="_blank" rel="noopener noreferrer" title="Ampliar foto ${nomCostat}">
+                                        <img src="${fotoUrl}" class="card-img-top rounded"
+                                             style="height: 95px; object-fit: cover;"
+                                             alt="Foto lliurament ${nomCostat}"
+                                             onerror="this.src='https://via.placeholder.com/200x100?text=Sense+Imatge'">
+                                    </a>
+                                </div>
+                            `;
+                            galeria.appendChild(col);
+                        });
+                    }
+                }
+                recalcularResum();
+            });
+
+            function afegirFotoAddicional() {
+                comptadorAddicionals++;
+                const idx = comptadorAddicionals;
+                const llista = document.getElementById('llistaFotosAddicionals');
+                const msgBuit = document.getElementById('missatgeSenseFotosAddicionals');
+                if (msgBuit)
+                    msgBuit.classList.add('d-none');
+
+                const item = document.createElement('div');
+                item.className = "border rounded p-3 bg-light position-relative foto-addicional-item";
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">Fotografia addicional #${idx}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="eliminarFotoAddicional(this)" title="Eliminar aquesta foto">
+                            <i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Eliminar
+                        </button>
+                    </div>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-sm-4">
+                            <label for="fotoExtraFile_${idx}" class="border rounded p-2 text-center bg-white text-secondary position-relative overflow-hidden d-block w-100 mb-0"
+                                   style="border-style: dashed !important; cursor: pointer; min-height: 105px;">
+                                <input type="file" id="fotoExtraFile_${idx}" name="fotosAddicionals" accept="image/*" class="visually-hidden" onchange="previewFotoAuto(this)" required>
+                                <div class="ph-content pt-2">
+                                    <i class="fa-solid fa-cloud-arrow-up fs-4 mb-1 d-block text-primary" aria-hidden="true"></i>
+                                    <span class="d-block extra-small fw-bold">Seleccionar imatge *</span>
+                                </div>
+                                <img class="img-preview d-none w-100 h-100 position-absolute top-0 start-0 rounded" style="object-fit: cover;" alt="Previsualització foto addicional ${idx}">
+                            </label>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="mb-2">
+                                <label for="titolFotoExtra_${idx}" class="form-label extra-small text-dark fw-semibold mb-1">Nom / Què es veu a la foto *</label>
+                                <input type="text" id="titolFotoExtra_${idx}" name="titolsFotosAddicionals" class="form-control form-control-sm"
+                                       placeholder="Ex: Ratllada porta davantera dreta, cop para-xocs..." required>
+                            </div>
+                            <div>
+                                <label for="descFotoExtra_${idx}" class="form-label extra-small text-dark fw-semibold mb-1">Descripció detallada</label>
+                                <textarea id="descFotoExtra_${idx}" name="descripcionsFotosAddicionals" class="form-control form-control-sm" rows="2"
+                                          placeholder="Descriu la mida, gravetat o ubicació exacta del detall..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                llista.appendChild(item);
+            }
+
+            function eliminarFotoAddicional(btn) {
+                const item = btn.closest('.foto-addicional-item');
+                if (item)
+                    item.remove();
+
+                const llista = document.getElementById('llistaFotosAddicionals');
+                const restants = llista.querySelectorAll('.foto-addicional-item');
+                const msgBuit = document.getElementById('missatgeSenseFotosAddicionals');
+                if (restants.length === 0 && msgBuit) {
+                    msgBuit.classList.remove('d-none');
+                }
+            }
+
+            function onToggleDesperfectes() {
+                const checkDanys = document.getElementById('cRet1');
+                const selectGravetat = document.getElementById('gravetatDany');
+                if (checkDanys && selectGravetat) {
+                    if (checkDanys.checked && parseFloat(selectGravetat.value) === 0) {
+                        selectGravetat.value = "75";
+                    } else if (!checkDanys.checked) {
+                        selectGravetat.value = "0";
+                    }
+                }
+                recalcularResum();
+            }
+
+            function recalcularResum() {
+                const card = document.getElementById('resumEconimicCard');
+                const fiancaBase = parseFloat(card.getAttribute('data-fianca')) || 300;
+                const preuHora = parseFloat(card.getAttribute('data-preu-hora')) || 0;
+                const dataFiStr = card.getAttribute('data-data-fi');
+                const horaFiStr = card.getAttribute('data-hora-fi');
+
+                // Càlcul d'hores de retard (G3P1-238)
+                let horesRetard = 0;
+                let deduccioRetard = 0;
+                const dataRetornVal = document.getElementById('dataRetorn').value;
+                const horaRetornVal = document.getElementById('horaRetorn').value;
+
+                if (dataFiStr && horaFiStr && dataRetornVal && horaRetornVal) {
+                    const previst = new Date(`${dataFiStr}T${horaFiStr}`);
+                    const real = new Date(`${dataRetornVal}T${horaRetornVal}`);
+                    if (!isNaN(previst.getTime()) && !isNaN(real.getTime()) && real > previst) {
+                        const minutsRetard = Math.floor((real - previst) / 60000);
+                        horesRetard = Math.ceil(minutsRetard / 60);
+                        deduccioRetard = horesRetard * preuHora;
+                    }
+                }
+
+                const gravetat = parseFloat(document.getElementById('gravetatDany').value) || 0;
+                const imputable = document.getElementById('imputableClient').value === "true";
+                const deduccioCarb = parseFloat(document.getElementById('deduccioCarburant').value) || 0;
+
+                const checkDanys = document.getElementById('cRet1');
+                if (checkDanys) {
+                    checkDanys.checked = gravetat > 0;
+                }
+
+                // G3P1-239: Si hi ha danys i són imputables al client, es reté tota la fiança
+                let deduccioDanys = (gravetat > 0 && imputable) ? fiancaBase : 0;
+                let totalDeduccions = deduccioRetard + deduccioDanys + deduccioCarb;
+                let importFinal = fiancaBase - totalDeduccions;
+                if (importFinal < 0)
+                    importFinal = 0;
+
+                document.getElementById('horesRetardText').innerText = horesRetard;
+                document.getElementById('deduccioRetardText').innerText = deduccioRetard > 0 ? "- " + deduccioRetard.toFixed(2) + " €" : "0,00 €";
+                document.getElementById('deduccioText').innerText = deduccioDanys > 0 ? "- " + deduccioDanys.toFixed(2) + " € (100% fiança)" : "0,00 €";
+                document.getElementById('deduccioCarburantText').innerText = deduccioCarb > 0 ? "- " + deduccioCarb.toFixed(2) + " €" : "0,00 €";
+                document.getElementById('importRetornarText').innerText = importFinal.toFixed(2) + " €";
+            }
+
+            function previewFotoAuto(input) {
+                if (input.files && input.files[0]) {
+                    const label = input.closest('label');
+                    const img = label.querySelector('.img-preview');
+                    const ph = label.querySelector('.ph-content');
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        img.src = e.target.result;
+                        img.classList.remove('d-none');
+                        if (ph)
+                            ph.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
+    </body>
+</html>
+                                

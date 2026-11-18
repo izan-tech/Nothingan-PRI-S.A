@@ -1,0 +1,385 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    background: #f8fafc;
+    color: #020617; /* Más oscuro (antes #0f172a) */
+    font-size: 13px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Capçalera Fosca (Format anterior) */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 32px;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    color: #fff;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.marca .logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.marca strong {
+    display: block;
+    font-size: 14px;
+    color: #fff;
+    letter-spacing: .5px;
+}
+
+.marca small {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #cbd5e1;
+}
+
+.nav-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.nav-header a {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.nav-header a.active {
+    color: #fff;
+    font-weight: 700;
+}
+
+.perfil-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e293b;
+    padding: 4px 12px 4px 4px;
+    border-radius: 20px;
+    border: 1px solid #334155;
+}
+
+.perfil-user img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Barra de Filtres Superior */
+.barra-filtres {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.form-filtres {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.grup-filtre {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.grup-filtre label {
+    font-size: 11px;
+    color: #334155; /* Mucho más oscuro (antes #94a3b8) */
+    font-weight: 600;
+}
+
+.grup-filtre input, .grup-filtre select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: #020617; /* Antes #0f172a */
+    background: #fff;
+}
+
+/* Botons de la barra de filtres */
+.grup-botons-filtre {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-cercar {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.btn-cercar:hover {
+    background: #1d4ed8;
+}
+
+.btn-netejar {
+    background: #e2e8f0;
+    color: #1e293b; /* Antes #475569 */
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+    border: 1px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+.btn-netejar:hover {
+    background: #cbd5e1;
+    color: #020617;
+}
+
+/* Layout Principal */
+.main-container {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+}
+
+/* Panel Lateral (Resum del període) */
+.card-resum {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    height: fit-content;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.card-resum h3 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    color: #020617; /* Antes #0f172a */
+}
+
+.bloc-recollida {
+    margin-bottom: 16px;
+}
+
+.bloc-recollida small {
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #334155; /* Mucho más oscuro (antes #94a3b8) */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.bloc-recollida p {
+    margin: 4px 0 2px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #020617;
+}
+
+.bloc-recollida span {
+    font-size: 11px;
+    color: #334155; /* Antes #64748b */
+}
+
+.caixa-durada {
+    background: #eff6ff;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    color: #1e40af; /* Azul más oscuro (antes #2563eb) */
+    font-weight: 700;
+}
+
+/* Cuadrícula de Vehículos */
+.seccio-cataleg h2 {
+    font-size: 18px;
+    margin: 0 0 20px;
+    color: #020617;
+}
+
+.graella-vehicles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.targeta-vehicle {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.targeta-vehicle img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: #f1f5f9;
+}
+
+.cos-vehicle {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.categoria-v {
+    font-size: 10px;
+    color: #1e40af; /* Azul más oscuro (antes #2563eb) */
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.targeta-vehicle h4 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    color: #020617;
+}
+
+.specs-v {
+    font-size: 11px;
+    color: #334155; /* Más oscuro (antes #64748b) */
+    margin-bottom: 16px;
+}
+
+.desglos-preus {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 12px;
+    margin-bottom: 16px;
+}
+
+.linia-preu {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #334155; /* Más oscuro (antes #64748b) */
+    margin-bottom: 4px;
+}
+
+.linia-preu strong {
+    color: #020617; /* Antes #0f172a */
+}
+
+.btn-reservar {
+    width: 100%;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+}
+
+.btn-reservar:hover {
+    background: #1d4ed8;
+}
+
+/* Botons d'accés / registre a la capçalera */
+.accés-usuaris {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-left: 12px;
+}
+
+.btn-login {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #334155;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-login:hover {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+.btn-registre {
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-registre:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.sense-vehicles {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #334155; /* Más oscuro (antes #94a3b8) */
+    padding: 40px;
+}
+
+@media (max-width: 850px) {
+    .main-container {
+        grid-template-columns: 1fr;
+    }
+    .form-filtres {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

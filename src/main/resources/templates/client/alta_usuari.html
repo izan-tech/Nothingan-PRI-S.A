@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Donar d'Alta Client - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Mateix CSS de Agents -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark m-0">Alta de Nou Client</h2>
+                    <p class="text-muted small mb-0 mt-1">Introduïu les dades del nou client i la seva documentació.</p>
+                </div>
+                <div>
+                    <a th:href="@{/dashboard/clients}" class="btn btn-secondary fw-semibold px-3 py-2" style="border-radius: 8px;">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Tornar al llistat
+                    </a>
+                </div>
+            </div>
+
+            <!-- Missatges Flash -->
+            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" th:if="${missatge}">
+                <i class="fa-solid fa-circle-check me-2"></i>
+                <span th:text="${missatge}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" th:if="${error}">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                <span th:text="${error}"></span>
+                <div class="small mt-1" th:if="${error}">Les dades s'han conservat, però has de tornar a escriure la contrasenya i a adjuntar les tres fotos.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="form-card shadow-sm">
+                <form id="formClient" th:action="@{/dashboard/clients/alta}" th:object="${client}" method="post" enctype="multipart/form-data" novalidate>
+
+                    <!-- Quadre de resum d'errors (ocult per defecte) -->
+                    <div id="errorSummary" class="alert alert-danger d-none mb-4" role="alert">
+                        <div class="fw-semibold small">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                            Revisa els camps següents abans de desar el client:
+                        </div>
+                        <ul id="errorList" class="small mb-0 mt-2"></ul>
+                    </div>
+
+                    <!-- 1. Dades Personals -->
+                    <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">1. Dades personals i d'accés</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Nom complet (com figura al DNI) *</label>
+                            <input type="text" th:field="*{nom}" class="form-control" placeholder="Ex: Joan Garcia i Soler" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">DNI / NIE / Passaport *</label>
+                            <input type="text" th:field="*{dni}" class="form-control" placeholder="Ex: 12345678Z" maxlength="9" required
+                                   oninput="this.value = this.value.toUpperCase()">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Data de caducitat del DNI *</label>
+                            <input type="date" th:field="*{dataCaducitatDNI}" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Adreça electrònica *</label>
+                            <input type="email" th:field="*{email}" class="form-control" placeholder="Ex: joan@gmail.com" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Contrasenya per al portal *</label>
+                            <input type="password" th:field="*{password}" class="form-control" placeholder="Mínim 8 caràcters" minlength="8" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Telèfon de contacte *</label>
+                            <input type="tel" th:field="*{telefon}" class="form-control" required
+                                   maxlength="9" minlength="9" inputmode="numeric"
+                                   pattern="[0-9]{9}"
+                                   title="Introdueix exactament 9 xifres, sense espais ni lletres"
+                                   placeholder="Ex: 612345678"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Data de naixement *</label>
+                            <input type="date" th:field="*{dataNaixement}" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nacionalitat *</label>
+                            <input type="text" th:field="*{nacionalitat}" class="form-control" placeholder="Ex: Espanyola" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Adreça completa *</label>
+                            <input type="text" th:field="*{adreca}" class="form-control" placeholder="Ex: Carrer Major 12, Terrassa" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Població *</label>
+                            <input type="text" th:field="*{poblacio}" class="form-control" placeholder="Ex: Terrassa" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Permís de Conduir -->
+                    <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">2. Permís de conduir</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipus de llicència *</label>
+                            <select th:field="*{tipusLlicencia}" class="form-select" required>
+                                <option value="" disabled th:selected="${client.tipusLlicencia == null or client.tipusLlicencia == ''}">Selecciona un tipus</option>
+                                <option value="B">B (Automòbils)</option>
+                                <option value="A">A (Motocicletes)</option>
+                                <option value="C">C (Camions)</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Data de caducitat del carnet de conduir *</label>
+                            <input type="date" th:field="*{dataCaducitatCarnet}" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Documentació i Fotos -->
+                    <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">3. Verificació d'identitat (Imatges)</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Foto DNI Frontal *</label>
+                            <input type="file" id="fotoDniFrontal" name="fotoDniFrontal" accept="image/png,image/jpeg" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Foto DNI Posterior *</label>
+                            <input type="file" id="fotoDniPosterior" name="fotoDniPosterior" accept="image/png,image/jpeg" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Foto Carnet de Conduir *</label>
+                            <input type="file" id="fotoCarnet" name="fotoCarnet" accept="image/png,image/jpeg" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Targeta de crèdit -->
+                    <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">4. Targeta de crèdit</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Número de targeta *</label>
+                            <input type="text" id="numTargeta" name="numTargeta" class="form-control" required
+                                   inputmode="numeric" maxlength="19" autocomplete="off"
+                                   placeholder="Ex: 4111111111111111"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data de caducitat (MM/AA) *</label>
+                            <input type="text" id="targetaCaducitat" name="targetaCaducitat" class="form-control" required
+                                   inputmode="numeric" maxlength="5" autocomplete="off"
+                                   placeholder="MM/AA"
+                                   pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+                                   title="Format MM/AA, per exemple 09/28"
+                                   oninput="
+                                   let v = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+                                   if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+                                   this.value = v;">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- Botons -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/dashboard/clients}" class="btn btn-light border px-4 fw-semibold" style="border-radius: 8px;">Cancel·lar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold" style="border-radius: 8px;">
+                            <i class="fa-solid fa-user-plus me-1"></i> Donar d'alta client
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Validació del formulari (mateix estil que l'alta de vehicles) -->
+        <script th:inline="none">
+            (function () {
+                var form = document.getElementById('formClient');
+                var summary = document.getElementById('errorSummary');
+                var list = document.getElementById('errorList');
+                var attempted = false;
+
+                // Regles per camp: id -> { required, test(valor), formatMsg }
+                var rules = {
+                    nom: {
+                        required: 'El nom complet és obligatori'
+                    },
+                    dni: {
+                        required: 'El DNI / NIE / Passaport és obligatori',
+                        test: function (v) { return /^[A-Z0-9]{6,9}$/i.test(v); },
+                        formatMsg: 'Format de document invàlid (Ex: 12345678Z)'
+                    },
+                    dataCaducitatDNI: {
+                        required: 'La data de caducitat del DNI és obligatòria'
+                    },
+                    email: {
+                        required: "L'adreça electrònica és obligatòria",
+                        test: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); },
+                        formatMsg: "Format d'adreça electrònica invàlid (Ex: joan@gmail.com)"
+                    },
+                    password: {
+                        required: 'La contrasenya és obligatòria',
+                        test: function (v) { return v.length >= 8; },
+                        formatMsg: 'La contrasenya ha de tenir mínim 8 caràcters'
+                    },
+                    telefon: {
+                        required: 'El telèfon de contacte és obligatori',
+                        test: function (v) { return /^[0-9]{9}$/.test(v); },
+                        formatMsg: 'El telèfon ha de tenir exactament 9 xifres'
+                    },
+                    dataNaixement: {
+                        required: 'La data de naixement és obligatòria'
+                    },
+                    nacionalitat: {
+                        required: 'La nacionalitat és obligatòria'
+                    },
+                    adreca: {
+                        required: "L'adreça completa és obligatòria"
+                    },
+                    poblacio: {
+                        required: 'La població és obligatòria'
+                    },
+                    tipusLlicencia: {
+                        required: 'Selecciona un tipus de llicència'
+                    },
+                    dataCaducitatCarnet: {
+                        required: 'La data de caducitat del carnet de conduir és obligatòria'
+                    },
+                    fotoDniFrontal: {
+                        required: 'La foto del DNI frontal és obligatòria'
+                    },
+                    fotoDniPosterior: {
+                        required: 'La foto del DNI posterior és obligatòria'
+                    },
+                    fotoCarnet: {
+                        required: 'La foto del carnet de conduir és obligatòria'
+                    },
+                    numTargeta: {
+                        required: 'El número de targeta és obligatori',
+                        test: function (v) { return /^[0-9]{13,19}$/.test(v); },
+                        formatMsg: 'Número de targeta invàlid (entre 13 i 19 xifres)'
+                    },
+                    targetaCaducitat: {
+                        required: 'La data de caducitat de la targeta és obligatòria',
+                        test: function (v) { return /^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(v); },
+                        formatMsg: 'Format de caducitat invàlid (Ex: 09/28)'
+                    }
+                };
+
+                function getValue(input) {
+                    if (input.type === 'file') {
+                        return input.files && input.files.length ? 'ok' : '';
+                    }
+                    return (input.value || '').trim();
+                }
+
+                function runValidation() {
+                    var errors = [];
+                    var firstInvalid = null;
+
+                    Object.keys(rules).forEach(function (id) {
+                        var input = document.getElementById(id);
+                        if (!input) return;
+                        var rule = rules[id];
+                        var feedback = input.parentElement.querySelector('.invalid-feedback');
+                        var value = getValue(input);
+                        var msg = '';
+
+                        if (!value) {
+                            msg = rule.required;
+                        } else if (rule.test && !rule.test(value)) {
+                            msg = rule.formatMsg;
+                        }
+
+                        if (msg) {
+                            input.classList.add('is-invalid');
+                            if (feedback) feedback.textContent = msg;
+                            errors.push(msg);
+                            if (!firstInvalid) firstInvalid = input;
+                        } else {
+                            input.classList.remove('is-invalid');
+                            if (feedback) feedback.textContent = '';
+                        }
+                    });
+
+                    list.innerHTML = '';
+                    errors.forEach(function (e) {
+                        var li = document.createElement('li');
+                        li.textContent = e;
+                        list.appendChild(li);
+                    });
+                    summary.classList.toggle('d-none', errors.length === 0);
+
+                    return { valid: errors.length === 0, firstInvalid: firstInvalid };
+                }
+
+                form.addEventListener('submit', function (e) {
+                    attempted = true;
+                    var result = runValidation();
+                    if (!result.valid) {
+                        e.preventDefault();
+                        summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+
+                // Un cop s'ha intentat enviar, revalida en directe mentre l'usuari corregeix
+                function live() {
+                    if (attempted) runValidation();
+                }
+                form.addEventListener('input', live);
+                form.addEventListener('change', live);
+            })();
+        </script>
+    </body>
+</html>

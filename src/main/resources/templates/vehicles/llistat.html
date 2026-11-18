@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flota de Vehicles - NOTHINGAN PRI S.A</title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- FontAwesome per les icones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Unificat -->
+    <link rel="stylesheet" th:href="@{/agents.css}">
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Flota de Vehicles</h2>
+                <p class="text-muted small mb-0 mt-1">Consulteu, filtreu i gestioneu tots els vehicles disponibles per al lloguer.</p>
+            </div>
+            <a th:href="@{/dashboard/vehicles/nou}" class="btn btn-primary fw-semibold px-4 py-2" style="border-radius: 8px;">
+                + Afegir nou vehicle
+            </a>
+        </div>
+
+        <!-- Alertes Flash -->
+        <div th:if="${succes}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            <span th:text="${succes}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Targeta de Filtres (RF45) -->
+        <div class="filter-card shadow-sm">
+            <form th:action="@{/dashboard/vehicles}" method="get">
+                
+                <!-- Fila principal -->
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="matricula" class="form-label">Matrícula</label>
+                        <input type="text" id="matricula" name="matricula" class="form-control text-uppercase" 
+                               placeholder="Ex. 1234ABC" 
+                               th:value="${matricula}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="tipus" class="form-label">Categoria</label>
+                        <select id="tipus" name="tipus" class="form-select">
+                            <option value="" th:selected="${tipus == null or tipus.isBlank()}">Tots els tipus</option>
+                            <option value="Turisme" th:selected="${tipus == 'Turisme'}">Turisme</option>
+                            <option value="Furgoneta" th:selected="${tipus == 'Furgoneta'}">Furgoneta</option>
+                            <option value="SUV" th:selected="${tipus == 'SUV'}">SUV</option>
+                            <option value="Motocicleta" th:selected="${tipus == 'Motocicleta'}">Motocicleta</option>
+                            <option value="Elèctric" th:selected="${tipus == 'Elèctric'}">Elèctric</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="estat" class="form-label">Estat</label>
+                        <select id="estat" name="estat" class="form-select">
+                            <option value="" th:selected="${estat == null}">Tots</option>
+                            <option value="true" th:selected="${estat == true}">Actius</option>
+                            <option value="false" th:selected="${estat == false}">Inactius</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 d-flex gap-2 justify-content-end">
+                        <button type="button" 
+                                class="btn btn-outline-secondary fw-semibold" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#filtresAvancats" 
+                                th:aria-expanded="${teFiltresAvancats}"
+                                aria-controls="filtresAvancats">
+                            <i class="fa-solid fa-sliders me-1"></i> Més filtres
+                        </button>
+
+                        <button type="submit" class="btn btn-primary fw-semibold px-3" title="Filtrar">
+                            <i class="fa-solid fa-filter me-1"></i> Filtrar
+                        </button>
+
+                        <a th:if="${teAlgunFiltre}" 
+                           th:href="@{/dashboard/vehicles}"
+                           class="btn btn-outline-danger" 
+                           title="Netejar tots els filtres">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Desplegable de Filtres Avançats -->
+                <div class="collapse mt-3 pt-3 border-top" 
+                     id="filtresAvancats" 
+                     th:classappend="${teFiltresAvancats ? 'show' : ''}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="marca" class="form-label">Marca</label>
+                            <input type="text" id="marca" name="marca" class="form-control" 
+                                   placeholder="Ex. Toyota, Seat..." 
+                                   th:value="${marca}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="model" class="form-label">Model</label>
+                            <input type="text" id="model" name="model" class="form-control" 
+                                   placeholder="Ex. Yaris, Ibiza..." 
+                                   th:value="${modelVehicle}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="anyMatriculacio" class="form-label">Any matrícula</label>
+                            <input type="number" id="anyMatriculacio" name="anyMatriculacio" class="form-control" 
+                                   min="1900" max="2100" placeholder="Ex. 2024" 
+                                   th:value="${anyMatriculacio}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="dataInici" class="form-label">Disponible des de</label>
+                            <input type="date" id="dataInici" name="dataInici" class="form-control" 
+                                   th:value="${dataInici}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="dataFi" class="form-label">Disponible fins a</label>
+                            <input type="date" id="dataFi" name="dataFi" class="form-control" 
+                                   th:value="${dataFi}">
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Taula de Llistat de Vehicles -->
+        <div class="custom-table-card shadow-sm">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>VISTA</th>
+                        <th>MARCA I MODEL</th>
+                        <th>MATRÍCULA</th>
+                        <th>TIPUS</th>
+                        <th>ANY</th>
+                        <th>PREU / DIA</th>
+                        <th>FIANÇA</th>
+                        <th>ESTAT</th>
+                        <th class="text-end">ACCIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${vehicles}">
+                        <td style="width: 70px;">
+                            <img th:if="${v.foto != null and !v.foto.isBlank()}"
+                                 th:src="@{'/uploads/vehicles/' + ${v.foto}}"
+                                 alt="Foto Vehicle" class="agent-img" style="width: 55px; height: 38px; object-fit: cover; border-radius: 6px;">
+                            <div th:unless="${v.foto != null and !v.foto.isBlank()}" 
+                                 class="agent-img d-flex align-items-center justify-content-center bg-light text-muted border" 
+                                 style="width: 55px; height: 38px; font-size: 0.65rem; border-radius: 6px;">
+                                 Vehicle
+                            </div>
+                        </td>
+                        <td>
+                            <a th:href="@{'/dashboard/vehicles/detall/' + ${v.matricula}}" class="text-decoration-none">
+                                <p class="agent-title" th:text="${v.marca + ' ' + v.model}">Toyota Yaris Hybrid</p>
+                            </a>
+                            <span class="agent-sub" th:text="'ID: ' + ${v.matricula}">ID: 4823KLP</span>
+                        </td>
+                        <td>
+                            <strong th:text="${v.matricula}">4823KLP</strong>
+                        </td>
+                        <td th:text="${v.tipusVehicle}">Furgoneta</td>
+                        <td th:text="${v.anyMatriculacio}">2024</td>
+                        <td th:text="${#numbers.formatDecimal(v.preuHora, 1, 2) + ' €'}">45.00 €</td>
+                        <td th:text="${#numbers.formatDecimal(v.fianca, 1, 2) + ' €'}">300.00 €</td>
+                        <td>
+                            <select class="form-select form-select-sm border-0 fw-semibold"
+                                    th:classappend="${v.actiu ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}"
+                                    th:data-matricula="${v.matricula}"
+                                    th:data-nom="${v.marca + ' ' + v.model}"
+                                    th:data-estat-actual="${v.actiu}"
+                                    onchange="gestionarCanviEstat(this)"
+                                    style="width: auto; cursor: pointer;">
+                                <option value="true" th:selected="${v.actiu}">Actiu</option>
+                                <option value="false" th:selected="${!v.actiu}">Inactiu</option>
+                            </select>
+                            <div class="small text-muted mt-1" style="font-size: 0.72rem;"
+                                 th:if="${!v.actiu and v.dataFiDesactivacio != null}"
+                                 th:text="'Fins: ' + ${#temporals.format(v.dataFiDesactivacio, 'dd/MM/yyyy')}">
+                            </div>
+                        </td>
+                        
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1 align-items-center">
+                                <a th:href="@{'/dashboard/vehicles/editar/' + ${v.matricula}}" class="btn btn-editar">Editar</a>
+                                <a th:href="@{'/dashboard/vehicles/detall/' + ${v.matricula}}" class="btn btn-outline-secondary btn-sm me-1 fw-semibold" style="border-radius: 6px; padding: 6px 14px;">Detall</a>
+                                <form th:action="@{'/dashboard/vehicles/eliminar/' + ${v.matricula}}" method="post" class="d-inline"
+                                      onsubmit="return confirm('Estàs segur de voler eliminar permanentment aquest vehicle?');">
+                                    <button type="submit" class="btn btn-desactivar">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr th:if="${#lists.isEmpty(vehicles)}">
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            No s'han trobat vehicles que coincideixin amb els criteris de cerca seleccionats.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: DESACTIVAR VEHICLE (Actiu -> Inactiu) -->
+    <div class="modal fade" id="modalDesactivarVehicle" tabindex="-1" aria-labelledby="modalDesactivarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form id="formDesactivarVehicle" th:action="@{/dashboard/vehicles/desactivar/}" method="post">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="modal-header bg-danger-subtle text-danger border-bottom-0">
+                        <h5 class="modal-title fw-bold" id="modalDesactivarLabel">
+                            <i class="fa-solid fa-ban me-2"></i> Desactivar Vehicle
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            Estàs a punt de desactivar el vehicle <strong id="desactivarVehicleNom"></strong> 
+                            (<span id="desactivarVehicleMatricula" class="fw-semibold"></span>) en la data d'avui.
+                        </p>
+                        <div class="alert alert-warning small py-2 mb-3">
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            Si el vehicle té reserves actives o en curs, el sistema no permetrà desactivar-lo fins que siguin anul·lades.
+                        </div>
+                        <div class="mb-2">
+                            <label for="dataFiDesactivacio" class="form-label fw-semibold">
+                                Data de finalització de la desactivació <span class="text-muted fw-normal">(opcional)</span>
+                            </label>
+                            <input type="date" class="form-control" id="dataFiDesactivacio" name="dataFiDesactivacio">
+                            <div class="form-text">Deixa-ho en blanc si és una desactivació indefinida.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-light border fw-semibold" data-bs-dismiss="modal">Cancel·lar</button>
+                        <button type="submit" class="btn btn-danger fw-semibold">
+                            <i class="fa-solid fa-check me-1"></i> Confirmar desactivació
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ACTIVAR VEHICLE (Inactiu -> Actiu) -->
+    <div class="modal fade" id="modalActivarVehicle" tabindex="-1" aria-labelledby="modalActivarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form id="formActivarVehicle" th:action="@{/dashboard/vehicles/activar/}" method="post">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="modal-header bg-success-subtle text-success border-bottom-0">
+                        <h5 class="modal-title fw-bold" id="modalActivarLabel">
+                            <i class="fa-solid fa-circle-check me-2"></i> Activar Vehicle
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            Confirmes que vols tornar a activar el vehicle <strong id="activarVehicleNom"></strong> 
+                            (<span id="activarVehicleMatricula" class="fw-semibold"></span>) en la data d'avui?
+                        </p>
+                        <div class="mb-3">
+                            <label for="motiuActivacio" class="form-label fw-semibold">
+                                Motiu de la intervenció / servei <span class="text-muted fw-normal">(opcional)</span>
+                            </label>
+                            <input type="text" class="form-control" id="motiuActivacio" name="motiu" 
+                                   placeholder="Ex. Neteja, manteniment, reparació...">
+                        </div>
+                        <div class="mb-2">
+                            <label for="importActivacio" class="form-label fw-semibold">
+                                Import associat (€) <span class="text-muted fw-normal">(opcional)</span>
+                            </label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="importActivacio" name="importCost" 
+                                   placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-light border fw-semibold" data-bs-dismiss="modal">Cancel·lar</button>
+                        <button type="submit" class="btn btn-success fw-semibold">
+                            <i class="fa-solid fa-check me-1"></i> Confirmar activació
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectActiuActual = null;
+        let valorAnterior = null;
+
+        function gestionarCanviEstat(selectEl) {
+            const matricula = selectEl.getAttribute('data-matricula');
+            const nom = selectEl.getAttribute('data-nom');
+            const estatActual = selectEl.getAttribute('data-estat-actual'); // "true" o "false"
+            const nouValor = selectEl.value;
+
+            selectActiuActual = selectEl;
+            valorAnterior = estatActual;
+
+            if (nouValor === 'false') {
+                // Passar a INACTIU -> Modal Desactivar
+                document.getElementById('desactivarVehicleNom').textContent = nom;
+                document.getElementById('desactivarVehicleMatricula').textContent = matricula;
+                document.getElementById('dataFiDesactivacio').value = '';
+                document.getElementById('formDesactivarVehicle').action = '/dashboard/vehicles/desactivar/' + encodeURIComponent(matricula);
+
+                const modal = new bootstrap.Modal(document.getElementById('modalDesactivarVehicle'));
+                modal.show();
+            } else {
+                // Passar a ACTIU -> Modal Activar
+                document.getElementById('activarVehicleNom').textContent = nom;
+                document.getElementById('activarVehicleMatricula').textContent = matricula;
+                document.getElementById('motiuActivacio').value = '';
+                document.getElementById('importActivacio').value = '';
+                document.getElementById('formActivarVehicle').action = '/dashboard/vehicles/activar/' + encodeURIComponent(matricula);
+
+                const modal = new bootstrap.Modal(document.getElementById('modalActivarVehicle'));
+                modal.show();
+            }
+        }
+
+        // Si l'agent tanca o cancel·la qualsevol dels dos modals, revertim el desplegable al seu estat original
+        document.getElementById('modalDesactivarVehicle').addEventListener('hidden.bs.modal', function () {
+            if (selectActiuActual && valorAnterior !== null) {
+                selectActiuActual.value = valorAnterior;
+            }
+        });
+
+        document.getElementById('modalActivarVehicle').addEventListener('hidden.bs.modal', function () {
+            if (selectActiuActual && valorAnterior !== null) {
+                selectActiuActual.value = valorAnterior;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestió de Reserves - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h2 class="fw-bold text-dark m-0">Gestió de Reserves</h2>
+                        <span class="badge bg-primary-subtle text-primary fw-bold rounded-pill px-3 py-1" 
+                              th:text="${#lists.size(reserves)} + ' totals'">0 totals</span>
+                    </div>
+                    <p class="text-muted small mb-0 mt-1">Consulteu, filtreu i gestió del control de reserves de la flota.</p>
+                </div>
+                <a th:href="@{/dashboard/reserves/nova}" class="btn btn-primary fw-semibold px-4 py-2" style="border-radius: 8px;">
+                    <i class="fa-solid fa-plus me-1"></i> Nova reserva
+                </a>
+            </div>
+
+            <!-- Alertes Flash -->
+            <div th:if="${missatge}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${missatge}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Targeta de Filtres -->
+            <div class="filter-card shadow-sm mb-4">
+                <form th:action="@{/dashboard/reserves}" method="get">
+                    <!-- Cerca principal i estat -->
+                    <div class="row g-3 align-items-end mb-3">
+                        <div class="col-md-7">
+                            <label for="q" class="form-label">Cerca general</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                <input type="text" id="q" name="q" class="form-control border-start-0" 
+                                       placeholder="Cerca per codi, client, DNI, matrícula o vehicle..." 
+                                       th:value="${q}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="estat" class="form-label">Estat de la reserva</label>
+                            <select id="estat" name="estat" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tots els estats</option>
+                                <option value="PENDENT" th:selected="${estat == 'PENDENT'}">Pendent</option>
+                                <option value="CONFIRMADA" th:selected="${estat == 'CONFIRMADA'}">Confirmada</option>
+                                <option value="EN_CURS" th:selected="${estat == 'EN_CURS'}">En curs</option>
+                                <option value="FINALITZADA" th:selected="${estat == 'FINALITZADA'}">Finalitzada</option>
+                                <option value="CANCELADA" th:selected="${estat == 'CANCELADA'}">Cancel·lada</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                                <i class="fa-solid fa-filter me-1"></i> Filtrar
+                            </button>
+                            <a th:if="${(q != null and !#strings.isEmpty(q)) or (dni != null and !#strings.isEmpty(dni)) or (email != null and !#strings.isEmpty(email)) or dataReserva != null or (matricula != null and !#strings.isEmpty(matricula)) or (codi != null and !#strings.isEmpty(codi)) or (estat != null and !#strings.isEmpty(estat))}" 
+                               th:href="@{/dashboard/reserves}"
+                               class="btn btn-outline-danger" 
+                               title="Netejar filtres">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Filtres combinables avançats -->
+                    <div class="row g-2 pt-2 border-top">
+                        <div class="col-md-2">
+                            <input type="text" name="codi" th:value="${codi}" class="form-control form-control-sm" placeholder="Codi de reserva" inputmode="numeric">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" name="dni" th:value="${dni}" class="form-control form-control-sm" placeholder="DNI del client" maxlength="9">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="email" th:value="${email}" class="form-control form-control-sm" placeholder="Email del client">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" name="matricula" th:value="${matricula}" class="form-control form-control-sm" placeholder="Matrícula" maxlength="10">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" name="dataReserva" th:value="${dataReserva}" class="form-control form-control-sm" title="Data de reserva">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Taula de Reserves -->
+            <div class="custom-table-card shadow-sm">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>CODI</th>
+                            <th>CLIENT</th>
+                            <th>VEHICLE</th>
+                            <th>PERÍODE</th>
+                            <th>COST TOTAL</th>
+                            <th>ESTAT</th>
+                            <th class="text-end">ACCIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cosTaula">
+                        <tr class="fila-reserva" th:each="r : ${reserves}">
+                            <td>
+                                <span class="fw-bold text-dark" th:text="'#' + ${r.codiReserva}">#1</span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/dashboard/clients/detall/' + ${r.client.dni}}" class="text-decoration-none">
+                                    <p class="agent-title" th:text="${r.client.nom}">Nom del client</p>
+                                </a>
+                                <span class="agent-sub" th:text="${r.client.dni}">00000000X</span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/dashboard/vehicles/detall/' + ${r.vehicle.matricula}}" class="text-decoration-none">
+                                    <p class="agent-title" th:text="${r.vehicle.marca + ' ' + r.vehicle.model}">Marca Model</p>
+                                </a>
+                                <span class="agent-sub" th:text="${r.vehicle.matricula}">0000ABC</span>
+                            </td>
+                            <td>
+                                <div class="small lh-sm">
+                                    <span class="fw-semibold text-dark" th:text="${#temporals.format(r.dataInici, 'dd/MM/yyyy')} + ' ' + ${#temporals.format(r.horaInici, 'HH:mm')}">01/01/2026 10:00</span>
+                                    <span class="text-muted d-block small">fins</span>
+                                    <span class="fw-semibold text-dark" th:text="${#temporals.format(r.dataFi, 'dd/MM/yyyy')} + ' ' + ${#temporals.format(r.horaFi, 'HH:mm')}">02/01/2026 10:00</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark" th:text="${#numbers.formatDecimal(r.costTotal, 1, 2) + ' €'}">0,00 €</span>
+                                <span class="agent-sub d-block" th:text="'Fiança: ' + ${#numbers.formatDecimal(r.fianca, 1, 2) + ' €'}">Fiança</span>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${r.estat == 'PENDENT' ? 'bg-warning-subtle text-warning-emphasis' : (r.estat == 'CONFIRMADA' ? 'bg-primary-subtle text-primary' : (r.estat == 'EN_CURS' ? 'bg-info-subtle text-info-emphasis' : (r.estat == 'FINALITZADA' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger')))}"
+                                      th:text="${r.estat == 'PENDENT' ? 'Pendent' : (r.estat == 'CONFIRMADA' ? 'Confirmada' : (r.estat == 'EN_CURS' ? 'En curs' : (r.estat == 'FINALITZADA' ? 'Finalitzada' : 'Cancel·lada')))}">Estat</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                    <a th:href="@{/dashboard/reserves/{codi}(codi=${r.codiReserva})}" class="btn btn-sm btn-primary fw-semibold" style="border-radius: 6px; padding: 6px 12px;">
+                                        Detall
+                                    </a>
+                                    <a th:href="@{'/dashboard/clients/detall/' + ${r.client.dni}}" class="btn btn-outline-secondary btn-sm fw-semibold" style="border-radius: 6px; padding: 6px 12px;">
+                                        <i class="fa-solid fa-user me-1"></i> Client
+                                    </a>
+                                    <a th:if="${r.estat != 'EN_CURS' and r.estat != 'FINALITZADA' and r.estat != 'CANCELADA'}"
+                                       th:href="@{/dashboard/reserves/{codi}/anular(codi=${r.codiReserva})}"
+                                       class="btn btn-outline-danger btn-sm fw-semibold" style="border-radius: 6px; padding: 6px 12px;">
+                                        Anul·lar
+                                    </a>
+                                    <form th:if="${r.estat != 'EN_CURS' and r.estat != 'FINALITZADA'}"
+                                          th:action="@{'/dashboard/reserves/' + ${r.codiReserva} + '/eliminar'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Estàs segur de voler eliminar permanentment aquesta reserva?');">
+                                        <button type="submit" class="btn btn-desactivar">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(reserves)}">
+                            <td colspan="7" class="text-center py-4 text-muted">Cap reserva trobada.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top px-2">
+                    <span id="textMostrant" class="text-muted small"
+                          th:text="${#lists.isEmpty(reserves)} ? 'Cap reserva registrada' : 'Mostrant 1 a ' + ${#lists.size(reserves)} + ' de ' + ${#lists.size(reserves)} + ' reserves'">Mostrant 0 reserves</span>
+                    <div class="pagination pagination-sm m-0" id="paginacio">
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-1" disabled>Anterior</button>
+                        <button type="button" class="btn btn-primary btn-sm me-1">1</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Següent</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Paginació automàtica (10 per pàgina)
+            try {
+            (function () {
+            var files = Array.prototype.slice.call(document.querySelectorAll('#cosTaula tr.fila-reserva'));
+            var total = files.length, perPagina = 10, pagina = 1;
+            if (total === 0) { return; }
+            var totalPagines = Math.max(1, Math.ceil(total / perPagina));
+            var contenidor = document.getElementById('paginacio');
+            var text = document.getElementById('textMostrant');
+
+            function boto(etiqueta, desactivat, actiu, accio) {
+            var b = document.createElement('button');
+            b.type = 'button'; 
+            b.textContent = etiqueta; 
+            b.disabled = desactivat;
+            b.className = 'btn btn-sm me-1 ' + (actiu ? 'btn-primary' : 'btn-outline-secondary');
+            b.addEventListener('click', accio);
+            return b;
+            }
+            function pinta() {
+            var ini = (pagina - 1) * perPagina, fi = Math.min(ini + perPagina, total);
+            files.forEach(function (f, i) { f.style.display = (i >= ini && i < fi) ? '' : 'none'; });
+            text.textContent = 'Mostrant ' + (ini + 1) + ' a ' + fi + ' de ' + total + ' reserves';
+            contenidor.innerHTML = '';
+            contenidor.appendChild(boto('Anterior', pagina === 1, false, function () { pagina--; pinta(); }));
+            for (var p = 1; p <= totalPagines; p++) {
+            (function (n) {
+            var b = boto(String(n), false, n === pagina, function () { pagina = n; pinta(); });
+            contenidor.appendChild(b);
+            })(p);
+            }
+            contenidor.appendChild(boto('Següent', pagina === totalPagines, false, function () { pagina++; pinta(); }));
+            }
+            pinta();
+            })();
+            } catch (e) { }
+        </script>
+    </body>
+</html>

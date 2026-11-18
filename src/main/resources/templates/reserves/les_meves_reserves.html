@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les meves reserves - NOTHINGAN PRI S.A.</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/cataleg.css}">
+    <link rel="stylesheet" th:href="@{/reservesClient.css}">
+</head>
+<body>
+
+    <!-- Header corporatiu -->
+    <header>
+        <a th:href="@{/}" class="marca">
+            <div class="logo">NP</div>
+            <div>
+                <strong>NOTHINGAN PRI S.A.</strong>
+                <small>PORTAL CLIENT</small>
+            </div>
+        </a>
+
+        <div class="nav-header">
+            <a th:href="@{/cataleg}">Catàleg</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/reserves-client}" class="active">Les meves reserves</a>
+
+            <div class="accés-usuaris" style="display: flex; align-items: center; gap: 12px;">
+                <th:block sec:authorize="isAuthenticated()">
+                    <a th:href="@{/perfil}" title="El meu perfil"
+                       style="width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; text-decoration: none; border: 2px solid #93c5fd;">
+                        <span th:text="${inicialUsuari != null ? inicialUsuari : 'C'}">C</span>
+                    </a>
+
+                    <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                        <button type="submit" class="btn btn-login" style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-right-from-bracket"></i> Tancar sessió
+                        </button>
+                    </form>
+                </th:block>
+
+                <th:block sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn btn-login">Iniciar sessió</a>
+                    <a th:href="@{/registre}" class="btn btn-login">Registrar-se</a>
+                </th:block>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contingut Principal -->
+    <main class="reserves-container">
+
+        <div class="reserves-cap">
+            <h2>Les meves reserves</h2>
+            <p>Consulta l'històric i l'estat de les teves sol·licituds de lloguer de vehicles.</p>
+            <p class="small text-muted">Si anul·les amb almenys 48 hores d'antelació, se't retornaran el cost del lloguer i la fiança; amb menys antelació, no hi haurà devolució.</p>
+        </div>
+
+        <!-- Missatges de Feedback -->
+        <div th:if="${missatge}" class="alert-success">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${missatge}"></span>
+        </div>
+        <div th:if="${error}" class="alert-error">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Filtres per codi i dates (G3P1-245) -->
+        <div class="filter-card-client">
+            <form th:action="@{/reserves-client}" method="get" class="filter-grid-client">
+                <div class="filter-group-client">
+                    <label for="codi">Codi de reserva</label>
+                    <input type="text" id="codi" name="codi" placeholder="Ex: 12 o #12"
+                           th:value="${codi}" inputmode="numeric">
+                </div>
+                <div class="filter-group-client">
+                    <label for="dataInici">Des de (data d'inici)</label>
+                    <input type="date" id="dataInici" name="dataInici" th:value="${dataInici}">
+                </div>
+                <div class="filter-group-client">
+                    <label for="dataFi">Fins a (data de fi)</label>
+                    <input type="date" id="dataFi" name="dataFi" th:value="${dataFi}">
+                </div>
+                <div class="filter-actions-client">
+                    <button type="submit" class="btn-filtrar-client">
+                        <i class="fa-solid fa-filter"></i> Filtrar
+                    </button>
+                    <a th:if="${(codi != null and !#strings.isEmpty(codi)) or dataInici != null or dataFi != null}"
+                       th:href="@{/reserves-client}"
+                       class="btn-netejar-client"
+                       title="Netejar filtres">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Taula de Reserves -->
+        <div class="card-taula">
+            <table class="taula-reserves">
+                <thead>
+                    <tr>
+                        <th>Codi</th>
+                        <th>Vehicle</th>
+                        <th>Període de Lloguer</th>
+                        <th>Cost Total</th>
+                        <th>Fiança</th>
+                        <th>Estat</th>
+                        <th>Accions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${reserves == null or #lists.isEmpty(reserves)}">
+                        <td colspan="7" class="sense-reserves-msg">
+                            <span th:if="${(codi != null and !#strings.isEmpty(codi)) or dataInici != null or dataFi != null}">
+                                No s'ha trobat cap reserva amb els filtres seleccionats.
+                                <a th:href="@{/reserves-client}">Veure totes les reserves</a>
+                            </span>
+                            <span th:unless="${(codi != null and !#strings.isEmpty(codi)) or dataInici != null or dataFi != null}">
+                                No tens cap reserva realitzada actualment.
+                                <a th:href="@{/cataleg}">Explorar el catàleg</a>
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr th:each="r : ${reserves}">
+                        <td class="codi-reserva" th:text="${'#' + r.codiReserva}"></td>
+                        <td>
+                            <div class="vehicle-info">
+                                <strong th:text="${r.vehicle != null ? (r.vehicle.marca + ' ' + r.vehicle.model) : '-'}"></strong>
+                                <small th:text="${r.vehicle != null ? r.vehicle.matricula : '-'}"></small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="dates-info">
+                                <span th:text="${#temporals.format(r.dataInici, 'dd/MM/yyyy')} + ' (' + ${r.horaInici} + ')'"></span>
+                                <i class="fa-solid fa-arrow-right icona-flecha"></i>
+                                <span th:text="${#temporals.format(r.dataFi, 'dd/MM/yyyy')} + ' (' + ${r.horaFi} + ')'"></span>
+                            </div>
+                        </td>
+                        <td class="preu-total" th:text="${#numbers.formatDecimal(r.costTotal, 1, 2) + ' €'}"></td>
+                        <td th:text="${#numbers.formatDecimal(r.fianca, 1, 2) + ' €'}"></td>
+                        <td>
+                            <span class="badge-estat"
+                                  th:classappend="${r.estat == 'CONFIRMADA' or r.estat == 'EN_CURS' or r.estat == 'FINALITZADA' ? 'badge-actiu' : (r.estat == 'CANCELADA' ? 'badge-inactiu' : 'badge-pendent')}"
+                                  th:text="${r.estat}"></span>
+                        </td>
+                        <td>
+                            <div class="accions-client-cell">
+                                <a th:href="@{'/reserves-client/' + ${r.codiReserva}}" class="btn-detall-client">
+                                    <i class="fa-solid fa-eye"></i> Detall
+                                </a>
+                                <a th:href="@{'/reserves-client/valorar/' + ${r.codiReserva}}" class="btn-valorar">
+                                    <i class="fa-solid fa-star"></i> Valorar
+                                </a>
+                                <form th:if="${r.estat != 'EN_CURS' and r.estat != 'FINALITZADA' and r.estat != 'CANCELADA'}"
+                                      th:action="@{/reserves-client/{codi}/anular(codi=${r.codiReserva})}"
+                                      method="post" style="display: inline;"
+                                      onsubmit="return confirm('Vols anul·lar aquesta reserva? Rebràs un correu amb l’import que et correspon.');">
+                                    <button type="submit" class="btn-detall-client">
+                                        <i class="fa-solid fa-ban"></i> Anul·lar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+</body>
+</html>

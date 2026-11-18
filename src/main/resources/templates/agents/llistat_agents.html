@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestió d'Agents - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark m-0">Gestió d'Agents</h2>
+                    <p class="text-muted small mb-0 mt-1">Consulteu, filtreu i gestioneu tots els empleats i administradors del sistema.</p>
+                </div>
+
+                <!-- SOLO ADMIN: Botó alta agent -->
+                <a sec:authorize="hasRole('ADMIN')" 
+                   th:href="@{/dashboard/agents/alta}" 
+                   class="btn btn-primary fw-semibold px-4 py-2" 
+                   style="border-radius: 8px;">
+                    + Afegir nou agent
+                </a>
+            </div>
+
+            <!-- Alertes Flash -->
+            <div th:if="${succes}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${succes}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${param.exit}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <span>Operació realitzada amb èxit.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Targeta de Filtres -->
+            <div class="filter-card shadow-sm mb-4">
+                <form th:action="@{/dashboard/agents/llista}" method="get" class="row g-3">
+                    <div class="col-md-9">
+                        <label for="cerca" class="form-label">Cerca per DNI, nom o correu electrònic</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                            </span>
+                            <input type="text" id="cerca" name="cerca" class="form-control border-start-0" 
+                                   placeholder="Introdueix un DNI (Ex: 12345678Z), nom o email..." 
+                                   th:value="${param.cerca}">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                            <i class="fa-solid fa-filter me-1"></i> Filtrar
+                        </button>
+                        <a th:if="${param.cerca != null and !#strings.isEmpty(param.cerca)}" 
+                           th:href="@{/dashboard/agents/llista}"
+                           class="btn btn-outline-danger" 
+                           title="Netejar filtres">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Taula de Llistat d'Agents -->
+            <div class="custom-table-card shadow-sm">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>FOTO</th>
+                            <th>NOM I COGNOMS</th>
+                            <th>DNI</th>
+                            <th>EMAIL</th>
+                            <th>HORARI</th>
+                            <th>ROL</th>
+                            <th class="text-end">ACCIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${agents}">
+                            <td>
+                                <img th:if="${a.foto != null and !a.foto.isBlank()}" 
+                                     th:src="@{'/uploads/agents/' + ${a.foto}}" 
+                                     alt="Foto Agent" class="agent-img"
+                                     onerror="this.src='https://via.placeholder.com/48?text=User';">
+                                <img th:unless="${a.foto != null and !a.foto.isBlank()}" 
+                                     src="https://via.placeholder.com/48?text=User" 
+                                     alt="Foto Default" class="agent-img">
+                            </td>
+                            <td>
+                                <a th:href="@{/dashboard/agents/detall/{dni}(dni=${a.dni})}" class="text-decoration-none">
+                                    <p class="agent-title" th:text="${a.nom}">Joan Garcia i Soler</p>
+                                </a>
+                                <span class="agent-sub" th:text="'DNI: ' + ${a.dni}">DNI: 12345678Z</span>
+                            </td>
+                            <td>
+                                <strong th:text="${a.dni}">12345678Z</strong>
+                            </td>
+                            <td th:text="${a.email}">empleat@nothingan.com</td>
+                            <td th:text="${(a.hora_entrada != null ? a.hora_entrada : '') + ' - ' + (a.hora_sortida != null ? a.hora_sortida : '')}">08:00 - 17:00</td>
+                            <td>
+                                <span th:if="${a.rol != null}" 
+                                      th:class="${a.rol.name() == 'ADMIN' ? 'badge-admin' : 'badge-agent'}" 
+                                      th:text="${a.rol}">AGENT</span>
+                                <span th:unless="${a.rol != null}">-</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                    <!-- SOLO ADMIN: Botó Editar -->
+                                    <a sec:authorize="hasRole('ADMIN')" 
+                                       th:href="@{'/dashboard/agents/editar/' + ${a.dni}}" 
+                                       class="btn btn-editar me-1">Editar</a>
+
+                                    <!-- TOTES LES ROLES: Botó Detall -->
+                                    <a th:href="@{'/dashboard/agents/detall/' + ${a.dni}}" 
+                                       class="btn btn-outline-secondary btn-sm me-1 fw-semibold" 
+                                       style="border-radius: 6px; padding: 6px 14px;">Detall</a>
+
+                                    <!-- SOLO ADMIN: Formulari i botó Eliminar -->
+                                    <form sec:authorize="hasRole('ADMIN')" 
+                                          th:action="@{'/dashboard/agents/eliminar/' + ${a.dni}}" 
+                                          method="post" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Estàs segur de voler eliminar permanentment aquest agent?');">
+                                        <button type="submit" class="btn btn-desactivar">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(agents)}">
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                No s'han trobat agents registrats que coincideixin amb la cerca.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

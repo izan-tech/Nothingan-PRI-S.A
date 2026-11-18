@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sessió</title>
+    <link rel="stylesheet" th:href="@{/login.css}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Columna Izquierda: Branding e Imagen -->
+        <div class="brand-column">
+            <span class="badge-location">Terrassa · Des de 1988</span>
+            <h1>La teva mobilitat, sempre a punt.</h1>
+            <p>Accedeix al teu espai per gestionar reserves, lliuraments i operacions de la flota amb la mateixa transparència de sempre.</p>
+        </div>
+
+        <!-- Columna Derecha: Formulario -->
+        <div class="form-column">
+            <div class="card-login">
+                <h2>Iniciar sessió</h2>
+                <p class="subtitle">Selecciona el teu perfil i introdueix les dades d'accés.</p>
+
+                <!-- Selector de Perfil
+                <label class="label-section">Accedir com a</label>
+                <div class="role-selector">
+                    <button type="button" class="role-card active" data-role="client" data-target="Catàleg i les meves reserves">
+                        <span class="role-badge">ACTIU</span>
+                        <strong>Client</strong>
+                        <small>Catàleg i reserves</small>
+                    </button>
+                    <button type="button" class="role-card" data-role="agent" data-target="Panell d'Agent">
+                        <strong>Agent</strong>
+                        <small>Panell d'Agent</small>
+                    </button>
+                    <button type="button" class="role-card" data-role="admin" data-target="Validació i ERP">
+                        <strong>Administrador</strong>
+                        <small>Validació i ERP</small>
+                    </button>
+                </div> -->
+
+                <!-- Formulario de Spring Security -->
+                <form th:action="@{/login}" method="post">
+                    <!-- Campo oculto para enviar el rol seleccionado al backend si es necesario -->
+                    <input type="hidden" name="userRole" id="userRole" value="client">
+
+                    <!-- Mensajes de Estado -->
+                    <div th:if="${param.error}" class="alert alert-danger">
+                        Dades d'accés incorrectes.
+                    </div>
+                    <div th:if="${param.notValidated}" class="alert alert-warning" role="alert">
+                        El teu compte encara no està validat. No podràs iniciar sessió fins que un administrador n'aprovi el registre.
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-success">
+                        Sessió tancada correctament.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Adreça electrònica</label>
+                        <input type="email" id="username" name="username" placeholder="nom@correu.cat" required autoFocus />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contrasenya</label>
+                        <input type="password" id="password" name="password" placeholder="Introduceix la teva contrasenya" required />
+                    </div>
+
+                    <div class="form-options">
+                        <label><input type="checkbox" name="remember-me"> Recorda'm en aquest dispositiu</label>
+                        <a th:href="@{/forgot-password}" class="link-forgot">Has oblidat la contrasenya?</a>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-submit">
+                        Iniciar sessió com a client &rarr;
+                    </button>
+                </form>
+
+                <!-- Cuadro informativo dinámico -->
+                <div class="info-box">
+                    <span id="infoText">En entrar, t'enviarem al Catàleg i les meves reserves del Portal Client.</span>
+                </div>
+
+                <div class="footer-register">
+                    <span>Encara no ets client?</span>
+                    <a th:href="@{/registre}" class="btn-register">Crear un compte</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para conmutar la selección de Rol -->
+    <script>
+        const roleCards = document.querySelectorAll('.role-card');
+        const roleInput = document.getElementById('userRole');
+        const submitBtn = document.getElementById('submitBtn');
+        const infoText = document.getElementById('infoText');
+
+        roleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                roleCards.forEach(c => {
+                    c.classList.remove('active');
+                    const badge = c.querySelector('.role-badge');
+                    if (badge) badge.remove();
+                });
+
+                card.classList.add('active');
+                
+                // Añadir badge ACTIU al seleccionado
+                const badgeSpan = document.createElement('span');
+                badgeSpan.className = 'role-badge';
+                badgeSpan.textContent = 'ACTIU';
+                card.prepend(badgeSpan);
+
+                const selectedRole = card.dataset.role;
+                const targetArea = card.dataset.target;
+                
+                roleInput.value = selectedRole;
+                submitBtn.innerHTML = `Iniciar sessió com a ${selectedRole} &rarr;`;
+                infoText.textContent = `En entrar, t'enviarem al ${targetArea}.`;
+            });
+        });
+    </script>
+</body>
+</html>

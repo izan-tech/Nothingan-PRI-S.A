@@ -1,0 +1,105 @@
+.registre-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    color: #020617; /* Más oscuro (antes #0f172a) */
+    border-radius: 10px;
+    padding: 32px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.registre-container h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #020617; /* Más oscuro (antes #0f172a) */
+}
+
+.registre-subtitol {
+    color: #334155; /* Mucho más oscuro (antes #64748b) */
+    font-size: 12px;
+    margin-bottom: 24px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-grup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-grup.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-grup label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a; /* Más oscuro (antes #475569) */
+}
+
+.form-grup input, 
+.form-grup select {
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #020617; /* Texto de entrada más oscuro */
+    outline: none;
+    font-family: inherit;
+    background: #fff;
+}
+
+.form-grup input:focus, 
+.form-grup select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.seccio-títol {
+    grid-column: 1 / -1;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e3a8a; /* Azul mucho más oscuro (antes #2563eb) */
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 16px;
+}
+
+.alert-error {
+    background: #fef2f2;
+    color: #7f1d1d; /* Rojo mucho más oscuro (antes #dc2626) */
+    border: 1px solid #fecaca;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.btn-enviar-registre {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-enviar-registre:hover {
+    background: #1d4ed8;
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}

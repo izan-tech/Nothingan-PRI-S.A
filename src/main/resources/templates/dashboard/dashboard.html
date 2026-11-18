@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard - NOTHINGAN PRI S.A</title>
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- FontAwesome per les icones -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- CSS Unificat i CSS del Dashboard -->
+        <link rel="stylesheet" th:href="@{/agents.css}">
+        <link rel="stylesheet" th:href="@{/dashboard.css}">
+    </head>
+    <body>
+
+        <!-- Sidebar Lateral (Centralitzat mitjançant fragment Thymeleaf) -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Alertes de confirmació o error -->
+            <div th:if="${succes}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${succes}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Secció: Resum de l'estat avui -->
+            <h3 class="fw-bold text-dark mb-3" style="font-size: 1.4rem;">Resum de l'estat avui</h3>
+
+            <div class="row g-3 mb-4">
+                <!-- Targeta KPI 1: id="kpiLliurament" per actualització dinàmica en JS -->
+                <div class="col-md-3">
+                    <div class="kpi-card shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="kpi-title">Reserves pendents lliurament</span>
+                        </div>
+                        <div class="kpi-number" id="kpiLliurament" th:text="${pendentsLliurament != null ? pendentsLliurament : 0}">0</div>
+                    </div>
+                </div>
+
+                <!-- Targeta KPI 2: id="kpiRetorn" per actualització dinàmica en JS -->
+                <div class="col-md-3">
+                    <div class="kpi-card shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="kpi-title">Reserves pendents de retorn</span>
+                        </div>
+                        <div class="kpi-number" id="kpiRetorn" th:text="${pendentsRetorn != null ? pendentsRetorn : 0}">0</div>
+                    </div>
+                </div>
+
+                <!-- Targeta KPI 3: id="kpiVehicles" per actualització dinàmica en JS -->
+                <div class="col-md-3">
+                    <div class="kpi-card shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="kpi-title">Vehicles en servei actiu</span>
+                            <i class="fa-solid fa-car text-muted opacity-50"></i>
+                        </div>
+                        <div class="kpi-number" id="kpiVehicles" th:text="${vehiclesActius != null ? vehiclesActius : 0}">0</div>
+                    </div>
+                </div>
+
+                <!-- Targeta KPI 4: id="kpiClients" per actualització dinàmica en JS -->
+                <div class="col-md-3">
+                    <div class="kpi-card shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="kpi-title">Clients totals registrats</span>
+                            <i class="fa-solid fa-users text-muted opacity-50"></i>
+                        </div>
+                        <div class="kpi-number" id="kpiClients" th:text="${clientsTotals != null ? clientsTotals : 0}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secció: Lliuraments d'avui i propers dies -->
+            <div class="detail-card shadow-sm p-4 mt-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h4 class="fw-bold text-dark m-0" style="font-size: 1.15rem;">Lliuraments d'avui i propers dies</h4>
+                    <button type="button" id="btnNetejarFiltres" class="btn btn-outline-secondary btn-sm">
+                        <i class="fa-solid fa-filter-circle-xmark me-1"></i> Netejar filtres
+                    </button>
+                </div>
+
+                <!-- BARRA DE FILTRES -->
+                <div class="row g-2 mb-4 p-3 bg-light rounded border">
+                    <div class="col-md-3">
+                        <label for="filtreClient" class="form-label small fw-semibold text-muted mb-1">Client</label>
+                        <input type="text" id="filtreClient" class="form-control form-control-sm" placeholder="Cercar per nom de client...">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filtreMatricula" class="form-label small fw-semibold text-muted mb-1">Matrícula</label>
+                        <input type="text" id="filtreMatricula" class="form-control form-control-sm" placeholder="Ex: 1234ABC">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filtreEstat" class="form-label small fw-semibold text-muted mb-1">Acció pendent</label>
+                        <select id="filtreEstat" class="form-select form-select-sm">
+                            <option value="TOTS">Tots (Per lliurar i per retornar)</option>
+                            <option value="PER_LLIURAR">Per lliurar</option>
+                            <option value="PER_RETORNAR">Per retornar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filtreDataInici" class="form-label small fw-semibold text-muted mb-1">Data des de</label>
+                        <input type="date" id="filtreDataInici" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filtreDataFi" class="form-label small fw-semibold text-muted mb-1">Data fins a</label>
+                        <input type="date" id="filtreDataFi" class="form-control form-control-sm">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle border-0 m-0">
+                        <thead>
+                            <tr>
+                                <th>CODI RESERVA</th>
+                                <th>CLIENT</th>
+                                <th>VEHICLE</th>
+                                <th>MATRÍCULA</th>
+                                <th>DATA LLIURAMENT</th>
+                                <th>ESTAT</th>
+                                <th class="text-end">ACCIONS</th>
+                            </tr>
+                        </thead>
+                        <!-- id="tablaLliuramentsBody": Permet buidar i reemplaçar les files amb innerHTML des de JS -->
+                        <tbody id="tablaLliuramentsBody">
+                            <!-- Llistat dinàmic renderitzat inicialment per Thymeleaf -->
+                            <tr th:each="r : ${propersLliuraments}"
+                                th:attr="data-client=${r.client != null ? r.client.nom : ''},
+                                         data-matricula=${r.vehicle != null ? r.vehicle.matricula : ''},
+                                         data-estat=${r.estat != null ? r.estat : 'PENDENT'},
+                                         data-data=${r.dataInici != null ? #temporals.format(r.dataInici, 'yyyy-MM-dd') : ''}">
+                                <td>
+                                    <strong th:text="${'RES-' + r.codiReserva}">RES-0000</strong>
+                                </td>
+                                <td th:text="${r.client != null ? r.client.nom : 'Sense Client'}">Nom Client</td>
+                                <td th:text="${r.vehicle != null ? (r.vehicle.marca + ' ' + r.vehicle.model) : 'Sense Vehicle'}">Vehicle</td>
+                                <td th:text="${r.vehicle != null ? r.vehicle.matricula : '---'}">Matrícula</td>
+                                <td th:text="${r.dataInici != null ? (#temporals.format(r.dataInici, 'dd/MM/yyyy') + (r.horaInici != null ? ', ' + r.horaInici + 'h' : '')) : '---'}">Data</td>
+                                <td>
+                                    <span th:if="${r.estat == 'PENDENT' or r.estat == null}" class="badge-pending-sign">Pendent de signar</span>
+                                    <span th:if="${r.estat == 'EN_CURS' or r.estat == 'LLIURAT'}" class="badge-delivered-status">Lliurat</span>
+                                    <span th:if="${r.estat == 'CONFIRMADA'}" class="badge-confirmed-status">Confirmada</span>
+                                    <span th:if="${r.estat == 'FINALITZADA'}" class="badge bg-secondary">Finalitzada</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        <!-- Botó Lliurar -->
+                                        <a th:if="${r.estat == 'PENDENT' or r.estat == 'CONFIRMADA' or r.estat == null}" 
+                                           th:href="@{'/dashboard/reserves/' + ${r.codiReserva} + '/lliurar'}"
+                                           class="btn btn-primary btn-sm px-3 fw-semibold style-btn-lliurar">
+                                            Lliurar
+                                        </a>
+
+                                        <!-- Botó Retornar -->
+                                        <a th:if="${r.estat == 'EN_CURS' or r.estat == 'LLIURAT'}" 
+                                           th:href="@{'/dashboard/reserves/' + ${r.codiReserva} + '/retornar'}"
+                                           class="btn btn-warning btn-sm px-3 fw-semibold text-dark">
+                                            <i class="fa-solid fa-arrow-rotate-left me-1"></i> Retornar
+                                        </a>
+
+                                        <!-- Badge de completat -->
+                                        <span th:if="${r.estat == 'FINALITZADA'}" class="badge bg-secondary py-2 px-3">
+                                            Completat
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Missatge quan no hi ha cap reserva -->
+                            <tr id="filaSenseResultats" th:style="${propersLliuraments == null or #lists.isEmpty(propersLliuraments)} ? '' : 'display:none;'">
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fa-regular fa-folder-open fs-3 d-block mb-2"></i>
+                                    No hi ha lliuraments ni reserves que coincideixin amb els filtres.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- ============================================================ -->
+        <!-- SCRIPT DE FILTRAT I ACTUALITZACIÓ EN TEMPS REAL (POLLING)    -->
+        <!-- ============================================================ -->
+        <script>
+            let dadesLliuramentsActuals = null;
+
+            function compleixFiltres(clientNom, matricula, estat, dataISO) {
+                const fClient = document.getElementById('filtreClient').value.trim().toLowerCase();
+                const fMatricula = document.getElementById('filtreMatricula').value.trim().toLowerCase();
+                const fEstat = document.getElementById('filtreEstat').value;
+                const fDataInici = document.getElementById('filtreDataInici').value;
+                const fDataFi = document.getElementById('filtreDataFi').value;
+
+                // 1. Filtre per client
+                if (fClient && !(clientNom || '').toLowerCase().includes(fClient)) {
+                    return false;
+                }
+
+                // 2. Filtre per matrícula
+                if (fMatricula && !(matricula || '').toLowerCase().includes(fMatricula)) {
+                    return false;
+                }
+
+                // 3. Filtre per estat (Per lliurar vs Per retornar)
+                const estatNorm = estat || 'PENDENT';
+                if (fEstat === 'PER_LLIURAR') {
+                    if (estatNorm !== 'PENDENT' && estatNorm !== 'CONFIRMADA') {
+                        return false;
+                    }
+                } else if (fEstat === 'PER_RETORNAR') {
+                    if (estatNorm !== 'EN_CURS' && estatNorm !== 'LLIURAT') {
+                        return false;
+                    }
+                }
+
+                // 4. Filtre per rang de dates (YYYY-MM-DD)
+                if (fDataInici && (!dataISO || dataISO < fDataInici)) {
+                    return false;
+                }
+                if (fDataFi && (!dataISO || dataISO > fDataFi)) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            function renderitzarTaulaFiltrada() {
+                const tbody = document.getElementById('tablaLliuramentsBody');
+
+                // Si encara no s'ha executat el primer fetch, filtrem les files renderitzades per Thymeleaf
+                if (dadesLliuramentsActuals === null) {
+                    const files = tbody.querySelectorAll('tr[data-client]');
+                    let visibles = 0;
+                    files.forEach(tr => {
+                        const ok = compleixFiltres(
+                            tr.getAttribute('data-client'),
+                            tr.getAttribute('data-matricula'),
+                            tr.getAttribute('data-estat'),
+                            tr.getAttribute('data-data')
+                        );
+                        tr.style.display = ok ? '' : 'none';
+                        if (ok) visibles++;
+                    });
+                    const filaBuida = document.getElementById('filaSenseResultats');
+                    if (filaBuida) {
+                        filaBuida.style.display = visibles === 0 ? '' : 'none';
+                    }
+                    return;
+                }
+
+                // Si ja tenim dades del JSON, filtrem i pintem
+                const filtrats = dadesLliuramentsActuals.filter(r =>
+                    compleixFiltres(r.clientNom, r.vehicleMatricula, r.estat, r.dataIniciISO)
+                );
+
+                if (filtrats.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fa-regular fa-folder-open fs-3 d-block mb-2"></i>
+                                No hi ha lliuraments ni reserves que coincideixin amb els filtres.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                let htmlContent = '';
+                filtrats.forEach(r => {
+                    let badgeEstat = '';
+                    if (r.estat === 'PENDENT' || !r.estat) {
+                        badgeEstat = '<span class="badge-pending-sign">Pendent de signar</span>';
+                    } else if (r.estat === 'EN_CURS' || r.estat === 'LLIURAT') {
+                        badgeEstat = '<span class="badge-delivered-status">Lliurat</span>';
+                    } else if (r.estat === 'CONFIRMADA') {
+                        badgeEstat = '<span class="badge-confirmed-status">Confirmada</span>';
+                    } else if (r.estat === 'FINALITZADA') {
+                        badgeEstat = '<span class="badge bg-secondary">Finalitzada</span>';
+                    }
+
+                    let accions = '';
+                    if (r.estat === 'PENDENT' || r.estat === 'CONFIRMADA' || !r.estat) {
+                        accions = `<a href="/dashboard/reserves/${r.codiReserva}/lliurar" class="btn btn-primary btn-sm px-3 fw-semibold style-btn-lliurar">Lliurar</a>`;
+                    } else if (r.estat === 'EN_CURS' || r.estat === 'LLIURAT') {
+                        accions = `<a href="/dashboard/reserves/${r.codiReserva}/retornar" class="btn btn-warning btn-sm px-3 fw-semibold text-dark"><i class="fa-solid fa-arrow-rotate-left me-1"></i> Retornar</a>`;
+                    } else if (r.estat === 'FINALITZADA') {
+                        accions = `<span class="badge bg-secondary py-2 px-3">Completat</span>`;
+                    }
+
+                    htmlContent += `
+                        <tr>
+                            <td><strong>RES-${r.codiReserva}</strong></td>
+                            <td>${r.clientNom}</td>
+                            <td>${r.vehicleNom}</td>
+                            <td>${r.vehicleMatricula}</td>
+                            <td>${r.dataIniciFormatada}</td>
+                            <td>${badgeEstat}</td>
+                            <td class="text-end"><div class="d-inline-flex gap-2">${accions}</div></td>
+                        </tr>`;
+                });
+
+                tbody.innerHTML = htmlContent;
+            }
+
+            /**
+             * Consulta l'endpoint API REST (/dashboard/api/stats) i reescriu
+             * el contingut dels KPIs i de la taula de lliuraments sense parpellejar.
+             */
+            function actualitzarDashboardRealtime() {
+                fetch('/dashboard/api/stats')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error en respondre l\'API');
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('kpiLliurament').textContent = data.pendentsLliurament;
+                        document.getElementById('kpiRetorn').textContent = data.pendentsRetorn;
+                        document.getElementById('kpiVehicles').textContent = data.vehiclesActius;
+                        document.getElementById('kpiClients').textContent = data.clientsTotals;
+
+                        dadesLliuramentsActuals = data.propersLliuraments || [];
+                        renderitzarTaulaFiltrada();
+                    })
+                    .catch(err => console.debug("Auto-refresh dashboard silenciós:", err));
+            }
+
+            // Events en temps real en escriure o canviar qualsevol filtre
+            ['filtreClient', 'filtreMatricula'].forEach(id => {
+                document.getElementById(id).addEventListener('input', renderitzarTaulaFiltrada);
+            });
+            ['filtreEstat', 'filtreDataInici', 'filtreDataFi'].forEach(id => {
+                document.getElementById(id).addEventListener('change', renderitzarTaulaFiltrada);
+            });
+
+            // Botó per netejar tots els filtres
+            document.getElementById('btnNetejarFiltres').addEventListener('click', () => {
+                document.getElementById('filtreClient').value = '';
+                document.getElementById('filtreMatricula').value = '';
+                document.getElementById('filtreEstat').value = 'TOTS';
+                document.getElementById('filtreDataInici').value = '';
+                document.getElementById('filtreDataFi').value = '';
+                renderitzarTaulaFiltrada();
+            });
+
+            // Configura l'execució automàtica cada 3000 ms (3 segons)
+            setInterval(actualitzarDashboardRealtime, 3000);
+        </script>
+    </body>
+</html>

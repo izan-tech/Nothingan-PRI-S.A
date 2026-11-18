@@ -1,0 +1,238 @@
+/* ==========================================================
+   Estils de l'apartat INFORMES (independent dels d'agents).
+   Mateixa paleta i maquetació; no depèn de Bootstrap.
+   ========================================================== */
+:root {
+    --sidebar-bg: #111827;
+    --sidebar-active: #1d4ed8;
+    --main-bg: #f9fafb;
+    --card-border: #e5e7eb;
+    --text: #030712; /* Más oscuro (antes #111827) */
+    --text-muted: #374151; /* Mucho más oscuro (antes #6b7280) */
+    --primary: #1e40af; /* Azul más oscuro (antes #2563eb) */
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background-color: var(--main-bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+/* ---------- Sidebar lateral ---------- */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: #d1d5db;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar .brand {
+    padding: 24px 20px;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #1f2937;
+}
+.sidebar .brand span {
+    display: block;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 400;
+    margin-top: 2px;
+}
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.sidebar nav form {
+    margin-top: auto;
+    margin-bottom: 16px;
+}
+.sidebar .nav-link {
+    color: #d1d5db;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 8px;
+    margin: 4px 12px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.sidebar .nav-link:hover { color: #ffffff; background-color: #1f2937; }
+.sidebar .nav-link.active {
+    background-color: var(--sidebar-active);
+    color: #ffffff;
+    font-weight: 500;
+}
+.sidebar .nav-link-button {
+    width: calc(100% - 24px);
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* ---------- Layout principal ---------- */
+.main-content { margin-left: 260px; padding: 40px; }
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.page-header h1 { margin: 0; font-size: 1.6rem; font-weight: 700; color: #030712; }
+.counter {
+    background: #dbeafe;
+    color: #1e3a8a; /* Azul más oscuro (antes #1e40af) */
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+/* ---------- Targetes ---------- */
+.filter-card, .custom-table-card {
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 28px;
+}
+.custom-table-card { padding: 0; overflow: hidden; }
+
+/* ---------- Filtre ---------- */
+.filter-card label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #111827; /* Más oscuro (antes #374151) */
+    margin-bottom: 0.5rem;
+}
+.filter-card select {
+    width: 100%;
+    max-width: 480px;
+    height: 130px;
+    color: #030712;
+}
+.filter-card .help { display: block; margin-top: 0.25rem; font-size: 0.8rem; color: var(--text-muted); }
+.filter-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+#btnGenerar:disabled { cursor: wait; }
+
+a:focus-visible, button:focus-visible, select:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+/* ---------- Missatges ---------- */
+.message { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+.message.error { background: #fee2e2; color: #7f1d1d; } /* Más oscuro (antes #991b1b) */
+.message.info { background: #dbeafe; color: #1e3a8a; }
+
+/* ---------- Taula ---------- */
+.table { width: 100%; border-collapse: collapse; margin: 0; }
+.table thead { background-color: #ffffff; border-bottom: 1px solid var(--card-border); }
+.table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 700;
+    padding: 16px 20px;
+    text-align: left;
+}
+.table tbody td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: var(--text);
+}
+.table .right { text-align: right; }
+.table .nowrap { white-space: nowrap; }
+.table .empty { text-align: center; color: var(--text-muted); padding: 40px 20px; }
+.client-title { font-weight: 700; margin: 0; color: #030712; }
+tr.cancelled td.struck { text-decoration: line-through; color: #4b5563; } /* Más oscuro (antes #9ca3af) */
+
+/* ---------- Badges d'estat ---------- */
+.badge-estat {
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+.badge-estat.PENDENT    { background: #fef3c7; color: #78350f; } /* Más oscuro (antes #92400e) */
+.badge-estat.CONFIRMADA { background: #dbeafe; color: #1e3a8a; } /* Más oscuro (antes #1e40af) */
+.badge-estat.EN_CURS    { background: #cffafe; color: #164e63; } /* Más oscuro (antes #155e75) */
+.badge-estat.FINALITZADA{ background: #dcfce7; color: #14532d; } /* Más oscuro (antes #166534) */
+.badge-estat.CANCELADA  { background: #fee2e2; color: #7f1d1d; } /* Más oscuro (antes #991b1b) */
+.badge-estat.ELIMINADA  { background: #e5e7eb; color: #111827; } /* Más oscuro (antes #374151) */
+
+/* ---------- Peu i paginació ---------- */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.pagination { display: flex; gap: 6px; }
+.pagination button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border: 1px solid var(--card-border);
+    background: #ffffff;
+    color: #030712;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.pagination button.active { background: var(--sidebar-active); border-color: var(--sidebar-active); color: #ffffff; }
+.pagination button:disabled { opacity: .5; cursor: default; }
+
+/* ---------- Totals ---------- */
+.totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.total-card {
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+}
+.total-card .label-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+.total-card .value-text { font-size: 1.6rem; font-weight: 700; color: #030712; }
+.total-card small { color: var(--text-muted); }
+.total-card.highlight { background: #eff6ff; border-color: #93c5fd; }
+.total-card.highlight .value-text { color: #1e3a8a; } /* Más oscuro (antes #1d4ed8) */
+
+/* ---------- Responsive (RN31) ---------- */
+@media (max-width: 900px) {
+    .sidebar { position: static; width: 100%; min-height: 0; }
+    .main-content { margin-left: 0; padding: 20px; }
+    .custom-table-card { overflow-x: auto; }
+    .table { min-width: 640px; }
+}

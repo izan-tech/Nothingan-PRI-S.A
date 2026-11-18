@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Vehicle - NOTHINGAN PRI S.A</title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- FontAwesome per les icones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Unificat -->
+    <link rel="stylesheet" th:href="@{/agents.css}">
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Editar Vehicle</h2>
+                <p class="text-muted small mb-0 mt-1">Actualització de dades i foto del vehicle.</p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard/vehicles}" class="btn btn-secondary fw-semibold px-3 py-2" style="border-radius: 8px;">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Cancel·lar
+                </a>
+            </div>
+        </div>
+
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" th:if="${error}">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="form-card shadow-sm">
+            <form th:action="@{/dashboard/vehicles/guardar}" th:object="${vehicle}" method="post" enctype="multipart/form-data">
+                
+                <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">1. Especificacions del vehicle</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Matrícula</label>
+                        <input type="text" th:field="*{matricula}" class="form-control bg-light" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Marca</label>
+                        <input type="text" th:field="*{marca}" class="form-control" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('marca')}" th:errors="*{marca}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Model</label>
+                        <input type="text" th:field="*{model}" class="form-control" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Any de matriculació</label>
+                        <input type="number" th:field="*{anyMatriculacio}" class="form-control" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('anyMatriculacio')}" th:errors="*{anyMatriculacio}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipus de vehicle</label>
+                        <select th:field="*{tipusVehicle}" class="form-select" required>
+                            <option value="Turisme">Turisme</option>
+                            <option value="Furgoneta">Furgoneta</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Motocicleta">Motocicleta</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Estat operatiu</label>
+                        <select th:field="*{estat}" class="form-select" required>
+                            <option value="DISPONIBLE">DISPONIBLE</option>
+                            <option value="EN MANTENIMENT">EN MANTENIMENT</option>
+                            <option value="RESERVAT">RESERVAT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">2. Tarifes i condicions</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Preu per hora (€)</label>
+                        <input type="number" step="0.01" th:field="*{preuHora}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Fiança (€)</label>
+                        <input type="number" step="0.01" th:field="*{fianca}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Límit de quilometratge</label>
+                        <input type="number" th:field="*{limitQuilometratge}" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Mínim de dies</label>
+                        <input type="number" th:field="*{minDiesLloguer}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Màxim de dies</label>
+                        <input type="number" th:field="*{maxDiesLloguer}" class="form-control" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('maxDiesLloguer')}" th:errors="*{maxDiesLloguer}"></div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">3. Imatge i detalls</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label">Canviar fotografia del vehicle (Deixar en blanc per mantenir l'actual)</label>
+                        <input type="file" name="file" accept="image/png, image/jpeg, image/webp" class="form-control">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Descripció pública</label>
+                        <textarea th:field="*{descripcio}" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Comentaris privats</label>
+                        <textarea th:field="*{comentarisPrivats}" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a th:href="@{/dashboard/vehicles}" class="btn btn-light border px-4 fw-semibold" style="border-radius: 8px;">Cancel·lar</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold" style="border-radius: 8px;">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Desar canvis
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

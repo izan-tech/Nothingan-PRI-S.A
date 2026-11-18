@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ca" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Informe de reserves per client</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/informes.css}">
+    </head>
+
+    <body>
+
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Informe de reserves per client</h1>
+                <span class="counter" th:if="${informe != null}" th:text="${informe.totalReserves()} + ' reserves'">0
+                    reserves</span>
+            </div>
+
+            <div class="message error" role="alert" th:if="${error}" th:text="${error}"></div>
+            <div class="message info" id="carregant" role="status" aria-live="polite" hidden>
+                Generant l'informe, un moment si us plau...
+            </div>
+
+            <!-- Filtre per client -->
+            <form class="filter-card" id="formInforme" th:action="@{/dashboard/informes/reserves}" method="get">
+                <label for="dnis" class="form-label">Clients</label>
+                <select id="dnis" name="dnis" class="form-select" multiple>
+                    <option th:each="c : ${clients}" th:value="${c.dni}" th:text="${c.nom} + ' (' + ${c.dni} + ')'"
+                            th:selected="${#lists.contains(dnisSeleccionats, c.dni)}">Client</option>
+                </select>
+                <span class="help form-text">Ctrl/Cmd + clic per seleccionar-ne més d'un. Sense selecció: tots els clients.</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary fw-semibold" id="btnGenerar"><i class="fa-solid fa-chart-column me-1"></i>Generar informe</button>
+                    <a class="btn btn-outline-secondary fw-semibold" th:href="@{/dashboard/informes/reserves}"><i class="fa-solid fa-rotate-left me-1"></i>Netejar</a>
+                </div>
+            </form>
+
+            <!-- Taula: data, vehicle, client, import (+ estat) -->
+            <div class="custom-table-card" th:if="${informe != null}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Vehicle</th>
+                            <th>Client</th>
+                            <th class="right">Import</th>
+                            <th>Estat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cosTaula">
+                        <tr class="fila-reserva" th:each="f : ${informe.files()}"
+                            th:classappend="${f.estat() != null and f.estat().name() == 'CANCELADA'} ? 'cancelled'">
+                            <td class="nowrap struck"
+                                th:text="${f.data() != null ? #temporals.format(f.data(), 'dd/MM/yyyy HH:mm') : '—'}">
+                                01/01/2026 10:00</td>
+                            <td class="struck" th:text="${f.vehicle()}">1234ABC - Seat Ibiza</td>
+                            <td><span class="client-title" th:text="${f.client()}">Nom (DNI)</span></td>
+                            <td class="right nowrap struck"
+                                th:text="${f.importReserva() != null ? #numbers.formatDecimal(f.importReserva(), 1, 'POINT', 2, 'COMMA') + ' €' : '—'}">
+                                0,00 €</td>
+                            <td>
+                                <span class="badge-estat" th:if="${f.estat() != null}" th:classappend="${f.estat().name()}"
+                                      th:text="${f.estat().name() == 'PENDENT' ? 'Pendent'
+                                      : (f.estat().name() == 'CONFIRMADA' ? 'Confirmada'
+                                      : (f.estat().name() == 'EN_CURS' ? 'En curs'
+                                      : (f.estat().name() == 'FINALITZADA' ? 'Finalitzada'
+                                      : (f.estat().name() == 'CANCELADA' ? 'Cancel·lada' : 'Eliminada'))))}">Estat
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(informe.files())}">
+                            <td colspan="5" class="empty">No hi ha reserves per als criteris indicats</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="table-footer">
+                    <span id="textMostrant"
+                          th:text="${#lists.isEmpty(informe.files())} ? 'Cap reserva' : 'Mostrant 1 a ' + ${#lists.size(informe.files())} + ' de ' + ${#lists.size(informe.files())} + ' reserves'">Cap
+                        reserva</span>
+                    <div class="pagination" id="paginacio"></div>
+                </div>
+            </div>
+
+            <!-- Totals de tot l'informe (no depenen de la paginació) -->
+            <div class="totals" th:if="${informe != null}">
+                <div class="total-card">
+                    <div class="label-title">Total de reserves</div>
+                    <div class="value-text" th:text="${informe.totalReserves()}">0</div>
+                    <small th:if="${informe.totalAnullades() > 0}"
+                           th:text="'No inclou ' + ${informe.totalAnullades()} + ' anul·lada(es)'"></small>
+                </div>
+                <div class="total-card highlight">
+                    <div class="label-title">Preu total</div>
+                    <div class="value-text"
+                         th:text="${#numbers.formatDecimal(informe.preuTotal(), 1, 'POINT', 2, 'COMMA')} + ' €'">0,00 €</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Només millores visuals: sense JavaScript l'informe i el filtre funcionen igualment. -->
+        <script>
+            // Indicador de càrrega (RN45)
+            try {
+                document.getElementById('formInforme').addEventListener('submit', function () {
+                    document.getElementById('carregant').hidden = false;
+                    document.getElementById('btnGenerar').disabled = true;
+                });
+            } catch (e) {
+            }
+
+            // Paginació (10 per pàgina)
+            try {
+                (function () {
+                    var files = Array.prototype.slice.call(document.querySelectorAll('#cosTaula tr.fila-reserva'));
+                    var total = files.length, perPagina = 10, pagina = 1;
+                    if (total <= perPagina) {
+                        return;
+                    }
+                    var totalPagines = Math.ceil(total / perPagina);
+                    var contenidor = document.getElementById('paginacio');
+                    var text = document.getElementById('textMostrant');
+
+                    function boto(etiqueta, desactivat, accio) {
+                        var b = document.createElement('button');
+                        b.type = 'button';
+                        b.textContent = etiqueta;
+                        b.disabled = desactivat;
+                        b.addEventListener('click', accio);
+                        return b;
+                    }
+                    function pinta() {
+                        var ini = (pagina - 1) * perPagina, fi = Math.min(ini + perPagina, total);
+                        files.forEach(function (f, i) {
+                            f.style.display = (i >= ini && i < fi) ? '' : 'none';
+                        });
+                        text.textContent = 'Mostrant ' + (ini + 1) + ' a ' + fi + ' de ' + total + ' reserves';
+                        contenidor.innerHTML = '';
+                        contenidor.appendChild(boto('Anterior', pagina === 1, function () {
+                            pagina--;
+                            pinta();
+                        }));
+                        for (var p = 1; p <= totalPagines; p++) {
+                            (function (n) {
+                                var b = boto(String(n), false, function () {
+                                    pagina = n;
+                                    pinta();
+                                });
+                                if (n === pagina) {
+                                    b.classList.add('active');
+                                }
+                                contenidor.appendChild(b);
+                            })(p);
+                        }
+                        contenidor.appendChild(boto('Següent', pagina === totalPagines, function () {
+                            pagina++;
+                            pinta();
+                        }));
+                    }
+                    pinta();
+                })();
+            } catch (e) {
+            }
+        </script>
+    </body>
+
+</html>
